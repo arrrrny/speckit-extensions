@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "updated_at": "2026-08-26T00:00:00Z",
+  "catalog_url": "https://raw.githubusercontent.com/arrrrny/speckit-extensions/main/catalog.json",
+  "extensions": {
+    "gh-triage": {
+      "id": "gh-triage",
+      "name": "GitHub Issue Triage",
+      "version": "1.0.0",
+      "description": "Fetch open GitHub issues, classify each as bug or feature, route bugs to the bug workflow (assess/fix/pr) and features to speckit.specify, and label each issue with the correct triage labels (on by default, read from config)",
+      "author": "arrrrny",
+      "repository": "https://github.com/arrrrny/speckit-extensions",
+      "homepage": "https://github.com/arrrrny/speckit-extensions",
+      "documentation": "https://github.com/arrrrny/speckit-extensions/blob/main/gh-triage/README.md",
+      "changelog": "https://github.com/arrrrny/speckit-extensions/blob/main/gh-triage/CHANGELOG.md",
+      "license": "MIT",
+      "category": "integration",
+      "effect": "read-write",
+      "requires": {
+        "speckit_version": ">=0.9.0",
+        "tools": [
+          {
+            "name": "gh",
+            "required": true
+          }
+        ]
+      },
+      "provides": {
+        "commands": 1,
+        "hooks": 0
+      },
+      "tags": [
+        "triage",
+        "github",
+        "workflow",
+        "automation",
+        "bug",
+        "feature"
+      ],
+      "download_url": "https://github.com/arrrrny/speckit-extensions/releases/download/gh-triage-v1.0.0/gh-triage.zip",
+      "verified": false,
+      "downloads": 0,
+      "stars": 0,
+      "created_at": "2026-08-26T00:00:00Z",
+      "updated_at": "2026-08-26T00:00:00Z"
+    }
+  }
+}

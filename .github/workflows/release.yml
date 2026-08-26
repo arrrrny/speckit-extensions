@@ -1,0 +1,54 @@
+name: Release Extension
+
+# Build and publish a single extension as a versioned GitHub release.
+# Tag format: <extension>-v<version>  (e.g. gh-triage-v1.0.0)
+on:
+  push:
+    tags:
+      - "*-v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Parse tag
+        id: meta
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          # Tag format: <extension>-v<version>  e.g. gh-triage-v1.0.0
+          EXT="${TAG%-v*}"
+          VERSION="${TAG#*-v}"
+          echo "ext=${EXT}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify extension directory exists
+        shell: bash
+        run: |
+          EXT="${{ steps.meta.outputs.ext }}"
+          if [ ! -d "${EXT}" ]; then
+            echo "::error::Extension directory '${EXT}/' not found in repo root" >&2
+            exit 1
+          fi
+
+      - name: Build extension zip
+        shell: bash
+        run: |
+          EXT="${{ steps.meta.outputs.ext }}"
+          # Zip the extension folder so the archive root contains '<ext>/'.
+          # The Spec Kit CLI auto-detects a single top-level subdir and reads
+          # '<ext>/extension.yml' from it on install.
+          zip -r "${EXT}.zip" "${EXT}" -x "*.git*" "*.DS_Store" "*/.DS_Store"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "${{ steps.meta.outputs.ext }} v${{ steps.meta.outputs.version }}"
+          files: "${{ steps.meta.outputs.ext }}.zip"
+          generate_release_notes: true

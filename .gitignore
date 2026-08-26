@@ -1,0 +1,9 @@
+# OS
+.DS_Store
+
+# Build artifacts — release zips are published as GitHub release assets, not committed
+*.zip
+
+# Python
+__pycache__/
+*.pyc
