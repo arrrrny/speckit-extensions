@@ -24,6 +24,12 @@ speckit-extensions/
 │   ├── config-template.yml
 │   ├── commands/
 │   └── scripts/
+├── tdd/                    # extension id: tdd (vendored locally from d0whc3r/spec-kit-tdd)
+│   ├── extension.yml
+│   ├── README.md
+│   ├── CHANGELOG.md
+│   ├── commands/
+│   └── templates/
 ├── catalog.json            # this repo's own extension catalog
 ├── LICENSE
 └── .github/workflows/release.yml
@@ -35,6 +41,7 @@ speckit-extensions/
 | --- | --- | --- |
 | [`gh-triage`](./gh-triage) | Batch-fetch open GitHub issues, classify as bug/feature, label, and route to the right workflow | [README](./gh-triage/README.md) |
 | [`gym`](./gym) | Forge operators through warmup reps and graded exercises, then open a gate only on a full pass | [README](./gym/README.md) |
+| [`tdd`](./tdd) | Drive spec-kit implementation test-first: a language-agnostic red-green-refactor loop with a per-feature test list, recorded evidence, and mutation-checked test strength | [README](./tdd/README.md) |
 
 ## Install an extension
 
