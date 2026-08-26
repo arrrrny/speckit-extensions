@@ -4,8 +4,8 @@
 # -----------------
 # Deterministic, dependency-light engine backing the `speckit.gh-triage.triage`
 # command. It fetches open GitHub issues for a repo, classifies each as
-# bug / feature / unknown, and (by default) labels each issue with the correct
-# triage labels read directly from the extension config.
+# bug / feature / chore / unknown, and (by default) labels each issue with the
+# correct triage labels read directly from the extension config.
 #
 # The "route to workflow" step (bug -> speckit.bug.assess, feature ->
 # speckit.specify) is performed by the agent following the command markdown;
@@ -41,6 +41,7 @@ DEF_REPO=""
 DEF_LIMIT="0"
 DEF_LABELS_BUG="bug"
 DEF_LABELS_FEATURE="enhancement"
+DEF_LABELS_CHORE="chore"
 DEF_LABELS_NEEDS_TRIAGE=""
 DEF_LABELS_INVALID="invalid"
 DEF_SEV_CRITICAL="severity:critical"
@@ -50,6 +51,7 @@ DEF_SEV_LOW="severity:low"
 DEF_SEV_UNKNOWN=""
 DEF_BUG_KEYWORDS="crash error exception traceback broken regression fails bug stack trace leak hang deadlock freeze corrupt panic"
 DEF_FEATURE_KEYWORDS="feature enhancement request proposal add support idea suggestion want"
+DEF_CHORE_KEYWORDS="chore cleanup refactor maintenance tech debt dependency bump migrate migration housekeeping branding asset swap rename update logos swap"
 
 # Active values (filled from config)
 AUTO_LABEL="$DEF_AUTO_LABEL"
@@ -57,6 +59,7 @@ CFG_REPO="$DEF_REPO"
 CFG_LIMIT="$DEF_LIMIT"
 LABELS_BUG="$DEF_LABELS_BUG"
 LABELS_FEATURE="$DEF_LABELS_FEATURE"
+LABELS_CHORE="$DEF_LABELS_CHORE"
 LABELS_NEEDS_TRIAGE="$DEF_LABELS_NEEDS_TRIAGE"
 LABELS_INVALID="$DEF_LABELS_INVALID"
 SEV_CRITICAL="$DEF_SEV_CRITICAL"
@@ -66,6 +69,7 @@ SEV_LOW="$DEF_SEV_LOW"
 SEV_UNKNOWN="$DEF_SEV_UNKNOWN"
 BUG_KEYWORDS="$DEF_BUG_KEYWORDS"
 FEATURE_KEYWORDS="$DEF_FEATURE_KEYWORDS"
+CHORE_KEYWORDS="$DEF_CHORE_KEYWORDS"
 
 # ---------------------------------------------------------------------------
 # CLI parsing
@@ -132,6 +136,7 @@ load_config() {
         if (substr(val,1,1)=="\"" && substr(val,length(val),1)=="\"") val=substr(val,2,length(val)-2)
         if (container=="bug_keywords") BK=BK " " val
         else if (container=="feature_keywords") FK=FK " " val
+        else if (container=="chore_keywords") CK=CK " " val
         next
       }
       # key: value
@@ -153,6 +158,7 @@ load_config() {
     END {
       if (BK!="") print "CFG_BUG_KEYWORDS=\"" substr(BK,2) "\""
       if (FK!="") print "CFG_FEATURE_KEYWORDS=\"" substr(FK,2) "\""
+      if (CK!="") print "CFG_CHORE_KEYWORDS=\"" substr(CK,2) "\""
     }
   ' "$cfg_path")"
 
@@ -164,6 +170,7 @@ load_config() {
   [ -n "${CFG_limit:-}" ] && CFG_LIMIT="$CFG_limit"
   [ -n "${CFG_labels_bug:-}" ] && LABELS_BUG="$CFG_labels_bug"
   [ -n "${CFG_labels_feature:-}" ] && LABELS_FEATURE="$CFG_labels_feature"
+  [ -n "${CFG_labels_chore:-}" ] && LABELS_CHORE="$CFG_labels_chore"
   [ -n "${CFG_labels_needs_triage:-}" ] && LABELS_NEEDS_TRIAGE="$CFG_labels_needs_triage"
   [ -n "${CFG_labels_invalid:-}" ] && LABELS_INVALID="$CFG_labels_invalid"
   [ -n "${CFG_severity_labels_critical:-}" ] && SEV_CRITICAL="$CFG_severity_labels_critical"
@@ -173,6 +180,7 @@ load_config() {
   [ -n "${CFG_severity_labels_unknown:-}" ] && SEV_UNKNOWN="$CFG_severity_labels_unknown"
   [ -n "${CFG_BUG_KEYWORDS:-}" ] && BUG_KEYWORDS="$CFG_BUG_KEYWORDS"
   [ -n "${CFG_FEATURE_KEYWORDS:-}" ] && FEATURE_KEYWORDS="$CFG_FEATURE_KEYWORDS"
+  [ -n "${CFG_CHORE_KEYWORDS:-}" ] && CHORE_KEYWORDS="$CFG_CHORE_KEYWORDS"
 }
 
 # ---------------------------------------------------------------------------
@@ -237,6 +245,7 @@ classify_and_plan() {
     *" bug "*) verdict="bug" ;;
     *" enhancement "*) verdict="feature" ;;
     *" feature "*) verdict="feature" ;;
+    *" chore "*) verdict="chore" ;;
   esac
 
   # Keyword test against the lowercased text.
@@ -263,6 +272,11 @@ classify_and_plan() {
   if [ "$verdict" = "unknown" ]; then
     for kw in $FEATURE_KEYWORDS; do
       if text_has "$kw"; then verdict="feature"; break; fi
+    done
+  fi
+  if [ "$verdict" = "unknown" ]; then
+    for kw in $CHORE_KEYWORDS; do
+      if text_has "$kw"; then verdict="chore"; break; fi
     done
   fi
 
@@ -294,6 +308,9 @@ classify_and_plan() {
       ;;
     feature)
       [ -n "$LABELS_FEATURE" ] && add="$add $LABELS_FEATURE"
+      ;;
+    chore)
+      [ -n "$LABELS_CHORE" ] && add="$add $LABELS_CHORE"
       ;;
     unknown)
       # Unknown == not confidently a bug or feature. Route to a human review
@@ -373,11 +390,12 @@ main() {
   echo "gh-triage: repo=$REPO issues=$total auto_label=$AUTO_LABEL"
 
   if [ "$AS_JSON" = "true" ]; then
-    printf '%s' "$issues_json" | jq -c --arg bl "$LABELS_BUG" --arg fl "$LABELS_FEATURE" '
+    printf '%s' "$issues_json" | jq -c --arg bl "$LABELS_BUG" --arg fl "$LABELS_FEATURE" --arg cl "$LABELS_CHORE" '
       map(. + {
         existing_labels: [.labels[].name] | join(","),
         verdict: (if (.labels|map(.name)|index("bug")) then "bug"
                   elif (.labels|map(.name)|index("enhancement") // .labels|map(.name)|index("feature")) then "feature"
+                  elif (.labels|map(.name)|index("chore")) then "chore"
                   else "unknown" end)
       })'
     return 0

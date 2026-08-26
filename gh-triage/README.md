@@ -1,13 +1,17 @@
 # GitHub Issue Triage (`gh-triage`)
 
 Batch-triage the open GitHub issues for a repository. For every open issue the
-extension **fetches** it, **classifies** it as a bug or a feature, **labels**
-it with the correct triage labels (on by default, read from config), and
-**routes** it to the right downstream workflow.
+extension **fetches** it, **classifies** it as a bug, a feature, or a chore,
+**labels** it with the correct triage labels (on by default, read from config),
+and **routes** it to the right downstream workflow.
 
 - **Bug** → the [`bug`](https://github.com/github/spec-kit/tree/main/extensions/bug)
   workflow: `speckit.bug.fetch` (load) → `speckit.bug.assess` (triage) →
   `speckit.bug.fix` / `speckit.bug.pr` (resolve).
+- **Chore** → the [`chore`](../chore) workflow: `speckit.chore.fetch` (load) →
+  `speckit.chore.assess` (scope) → `speckit.chore.implement` / `speckit.chore.pr`
+  (carry out). Chores are maintenance work (refactors, dependency bumps, asset/
+  branding swaps, config cleanups, tooling changes) — not bugs, not features.
 - **Feature** → `speckit.specify` (create a feature spec under `specs/`).
 
 ## Install
@@ -16,8 +20,9 @@ it with the correct triage labels (on by default, read from config), and
 # From a checked-out copy of speckit-extensions (dev install):
 specify extension add --dev gh-triage
 
-# The bug extension must also be installed (gh-triage requires it):
+# The bug and chore extensions must also be installed (gh-triage requires them):
 specify extension add bug
+specify extension add --dev chore
 
 # Then, inside a project that is a GitHub repo:
 specify init
@@ -47,12 +52,14 @@ detected. The exact label names are read **directly from config**
 
 ```yaml
 auto_label: true            # label issues after triage (set false to preview only)
-auto_fix: false             # assess only; set true to also run bug.fix / bug.pr
+auto_fix: false             # assess bugs only; set true to also run bug.fix / bug.pr
+auto_implement: false       # scope chores only; set true to also run chore.implement / chore.pr
 repo: ""                    # owner/repo, or inferred from git remote
 limit: 0                    # 0 = all open issues
 labels:
   bug: "bug"
   feature: "enhancement"
+  chore: "chore"
   needs_triage: ""      # applied to issues the classifier can't place (not auto-flagged "invalid")
   invalid: "invalid"    # reference only; gh-triage never auto-applies "invalid"
 severity_labels:
@@ -63,10 +70,11 @@ severity_labels:
   unknown: ""
 bug_keywords: [crash, error, exception, broken, regression, fails, bug, ...]
 feature_keywords: [feature, enhancement, request, proposal, "add support", ...]
+chore_keywords: [chore, cleanup, refactor, maintenance, "tech debt", "dependency bump", migrate, migration, housekeeping, branding, "asset swap", rename, "update logos", swap]
 ```
 
 Classification precedence: an issue that already carries a classification
-label (`bug` / `enhancement` / `feature`) keeps that verdict; otherwise
+label (`bug` / `enhancement` / `feature` / `chore`) keeps that verdict; otherwise
 keyword hints are used; otherwise the full text is read and a verdict is chosen.
 **Only labels that exist in the target repo are applied** — a configured label
 that the repo does not have is skipped with a warning, never force-created. Use
