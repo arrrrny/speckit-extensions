@@ -30,6 +30,12 @@ speckit-extensions/
 │   ├── CHANGELOG.md
 │   ├── commands/
 │   └── templates/
+├── chore/                  # extension id: chore (maintenance chores; paired with gh-triage)
+│   ├── extension.yml
+│   ├── README.md
+│   ├── CHANGELOG.md
+│   ├── config-template.yml
+│   └── commands/
 ├── catalog.json            # this repo's own extension catalog
 ├── LICENSE
 └── .github/workflows/release.yml
@@ -42,6 +48,7 @@ speckit-extensions/
 | [`gh-triage`](./gh-triage) | Batch-fetch open GitHub issues, classify as bug/feature, label, and route to the right workflow | [README](./gh-triage/README.md) |
 | [`gym`](./gym) | Forge operators through warmup reps and graded exercises, then open a gate only on a full pass | [README](./gym/README.md) |
 | [`tdd`](./tdd) | Drive spec-kit implementation test-first: a language-agnostic red-green-refactor loop with a per-feature test list, recorded evidence, and mutation-checked test strength | [README](./tdd/README.md) |
+| [`chore`](./chore) | Scope, track, and implement maintenance chores (non-feature, non-bug work) — constitution-aware, routed by `gh-triage` | [README](./chore/README.md) |
 
 ## Install an extension
 
@@ -69,8 +76,8 @@ specify extension install gh-triage
 specify extension add --dev gh-triage
 ```
 
-The `bug` extension must also be installed for `gh-triage` to work
-(`gh-triage` requires `speckit.bug.*`).
+The `bug` and `chore` extensions must also be installed for `gh-triage` to work
+(`gh-triage` requires `speckit.bug.*` and `speckit.chore.*`).
 
 ## Publishing a release
 
