@@ -6,7 +6,7 @@ extension:
   version: "1.0.0"
   description: "Train and gate operators of any software: warmup reps grow reflexes, graded exercises prove skill under load, and a gate opens only on full pass. Installable into any Spec Kit project."
   author: gym
-  repository: https://github.com/arrrrny/gym
+  repository: https://github.com/arrrrny/speckit-extensions
   license: MIT
 
 requires:
