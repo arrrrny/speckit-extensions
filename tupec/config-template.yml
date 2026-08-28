@@ -1,0 +1,35 @@
+# TUPEC — Total Rewrite Feature Inventory Configuration
+# Copied to .specify/extensions/tupec/tupec-config.yml on install
+
+# Root directory for TUPEC state files (inventory.json, inventory.md, rewrite-plan.md, history)
+inventory_path: ".specify/tupec/"
+
+# Scan depth for the initial analysis pass
+# - quick: only entrypoints and main routes
+# - normal: routes, DB schemas, config, integrations, auth
+# - exhaustive: everything quick+normal plus background jobs, observability, scripts, tests-as-spec, dead code, unmapped areas
+scan_depth: "exhaustive"
+
+# Target stack for the rewrite. When set, tupec.spec injects this into every generated spec
+# as a hard constraint. The user's forklift case uses `zuraffa` — a Flutter/Dart clean-architecture
+# framework (zfa entity create / zfa make / zfa build).
+# Setting `stack: zuraffa` makes tupec.spec require every spec to be realizable with
+# zuraffa-generated clean-architecture layers only.
+stack: ""
+
+# Free-form hard constraints injected into every spec during tupec.spec.
+# Example entries (commented):
+# constraints:
+#   - "zuraffa only — no hand-rolled architecture"
+#   - "no legacy code carried over"
+#   - "all persistence through zuraffa repositories"
+#   - "HTTP layer uses zfa-generated endpoints only"
+constraints: []
+
+# When true, tupec.spec chains __SPECKIT_COMMAND_TDD_PLAN__ per feature so every spec
+# lands with a test list first (red-green-refactor loop via the TDD extension).
+tdd: true
+
+# Batch size for spec emission. 0 = all features at once. Non-zero processes in batches
+# of this size (useful for very large inventories to avoid context/rate limits).
+spec_batch_size: 0

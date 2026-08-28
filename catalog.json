@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "updated_at": "2026-08-26T00:00:00Z",
+  "updated_at": "2026-08-28T00:00:00Z",
   "catalog_url": "https://raw.githubusercontent.com/arrrrny/speckit-extensions/main/catalog.json",
   "extensions": {
     "gym": {
@@ -45,8 +45,8 @@
     "gh-triage": {
       "id": "gh-triage",
       "name": "GitHub Issue Triage",
-      "version": "1.0.0",
-      "description": "Fetch open GitHub issues, classify each as bug or feature, route bugs to the bug workflow (assess/fix/pr) and features to speckit.specify, and label each issue with the correct triage labels (on by default, read from config)",
+      "version": "1.1.0",
+      "description": "Fetch open GitHub issues, classify each as bug, feature, or chore, route them to the bug, chore, or specify workflow, and apply the matching triage labels (on by default). Also provides a command to file a GitHub issue for a new feature and optionally auto-run speckit.specify.",
       "author": "arrrrny",
       "repository": "https://github.com/arrrrny/speckit-extensions",
       "homepage": "https://github.com/arrrrny/speckit-extensions",
@@ -61,11 +61,15 @@
           {
             "name": "gh",
             "required": true
+          },
+          {
+            "name": "jq",
+            "required": true
           }
         ]
       },
       "provides": {
-        "commands": 1,
+        "commands": 2,
         "hooks": 0
       },
       "tags": [
@@ -76,12 +80,12 @@
         "bug",
         "feature"
       ],
-      "download_url": "https://github.com/arrrrny/speckit-extensions/releases/download/gh-triage-v1.0.0/gh-triage.zip",
+      "download_url": "https://github.com/arrrrny/speckit-extensions/releases/download/gh-triage-v1.1.0/gh-triage.zip",
       "verified": false,
       "downloads": 0,
       "stars": 0,
       "created_at": "2026-08-26T00:00:00Z",
-      "updated_at": "2026-08-26T00:00:00Z"
+      "updated_at": "2026-08-28T00:00:00Z"
     },
     "chore": {
       "id": "chore",
@@ -162,6 +166,47 @@
       "stars": 0,
       "created_at": "2026-08-04T00:00:00Z",
       "updated_at": "2026-08-04T00:00:00Z"
+    },
+    "tupec": {
+      "id": "tupec",
+      "name": "TUPEC — Total Rewrite Feature Inventory",
+      "version": "1.0.0",
+      "description": "Greenfield-rewrite planner that deeply analyzes an existing codebase to produce a complete feature inventory, then lets the user iterate (chop/add) before emitting greenfield specs for every surviving feature through the TDD cycle.",
+      "author": "arrrrny",
+      "repository": "https://github.com/arrrrny/speckit-extensions",
+      "homepage": "https://github.com/arrrrny/speckit-extensions",
+      "documentation": "https://github.com/arrrrny/speckit-extensions/blob/main/tupec/README.md",
+      "changelog": "https://github.com/arrrrny/speckit-extensions/blob/main/tupec/CHANGELOG.md",
+      "license": "MIT",
+      "category": "planning",
+      "effect": "read-write",
+      "requires": {
+        "speckit_version": ">=0.9.0",
+        "tools": [
+          {
+            "name": "node",
+            "required": true
+          }
+        ]
+      },
+      "provides": {
+        "commands": 5,
+        "hooks": 0
+      },
+      "tags": [
+        "tupec",
+        "rewrite",
+        "greenfield",
+        "inventory",
+        "analysis",
+        "specs"
+      ],
+      "download_url": "https://github.com/arrrrny/speckit-extensions/releases/download/tupec-v1.0.0/tupec.zip",
+      "verified": false,
+      "downloads": 0,
+      "stars": 0,
+      "created_at": "2026-08-26T00:00:00Z",
+      "updated_at": "2026-08-26T00:00:00Z"
     }
   }
 }

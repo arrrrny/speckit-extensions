@@ -1,0 +1,18 @@
+{
+  "collection": "memsearch_chunks",
+  "failed_files": [],
+  "indexed_chunks": 1,
+  "indexed_files": 2,
+  "last_completed_at": "2026-08-28T11:19:08.555886Z",
+  "last_started_at": "2026-08-28T11:17:53.643041Z",
+  "last_success_at": "2026-08-28T11:19:08.555886Z",
+  "milvus_uri": "http://localhost:19530",
+  "operation": "index",
+  "paths": [
+    "/Users/ahmettok/.kimi-code/../Developer/speckit-extensions/.memsearch/memory"
+  ],
+  "schema_version": 1,
+  "status": "ok",
+  "total_files": 2,
+  "updated_at": "2026-08-28T11:19:08.555886Z"
+}

@@ -1,0 +1,58 @@
+schema_version: "1.0"
+
+extension:
+  id: tupec
+  name: "TUPEC — Total Rewrite Feature Inventory"
+  version: "1.0.0"
+  description: "Greenfield-rewrite planner that deeply analyzes an existing codebase to produce a complete feature inventory, then lets the user iterate (chop/add) before emitting greenfield specs for every surviving feature through the TDD cycle."
+  author: arrrrny
+  repository: https://github.com/arrrrny/speckit-extensions
+  homepage: https://github.com/arrrrny/speckit-extensions
+  license: MIT
+
+requires:
+  speckit_version: ">=0.9.0"
+  tools:
+    - name: node
+      required: true
+
+provides:
+  commands:
+    - name: speckit.tupec.scan
+      file: commands/speckit.tupec.scan.md
+      description: "Deep analysis pass — exhaustively walks the target project to produce a complete, numbered feature inventory (inventory.md + inventory.json); explicitly FORBIDDEN from writing specs or code"
+    - name: speckit.tupec.chop
+      file: commands/speckit.tupec.chop.md
+      description: "Mark one or more features as chopped (status: chopped) with a required reason; supports ids, ranges, and fuzzy title match; preserves audit trail and warns on dependency violations"
+    - name: speckit.tupec.add
+      file: commands/speckit.tupec.add.md
+      description: "Add a new feature to the inventory (origin: added, ids A001...) with title, description, rationale, category, dependencies; refuses near-duplicates unless confirmed"
+    - name: speckit.tupec.list
+      file: commands/speckit.tupec.list.md
+      description: "Render current inventory: kept / chopped / added, counts, dependency warnings, lock state; supports --json output"
+    - name: speckit.tupec.spec
+      file: commands/speckit.tupec.spec.md
+      description: "FINAL run — requires locked inventory; for every keep feature in dependency order, invokes __SPECKIT_COMMAND_SPECIFY__ to write a greenfield spec; injects rewrite constraints from config; when tdd: true chains __SPECKIT_COMMAND_TDD_PLAN__ per feature; emits rewrite-plan.md index; idempotent"
+
+  config:
+    - name: "tupec-config.yml"
+      template: "config-template.yml"
+      description: "TUPEC configuration (inventory path, scan depth, target stack, constraints, TDD chaining, spec batch size)"
+      required: false
+
+tags:
+  - "tupec"
+  - "rewrite"
+  - "greenfield"
+  - "inventory"
+  - "analysis"
+  - "specs"
+
+config:
+  defaults:
+    inventory_path: ".specify/tupec/"
+    scan_depth: "exhaustive"
+    stack: ""
+    constraints: []
+    tdd: true
+    spec_batch_size: 0
