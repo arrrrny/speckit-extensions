@@ -12,8 +12,7 @@
 // All subcommands read/write .specify/tupec/inventory.json, preserve history[],
 // validate IDs, exit with clear codes: 0=ok, 1=usage/error, 2=validation, 3=locked, 4=not-found.
 
-import fs from 'node:fs/promises';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -51,7 +50,7 @@ function saveInventory(inv) {
 }
 
 function ensureDir() {
-  if (!existsSync(INVENTORY_DIR)) fs.mkdirSync(INVENTORY_DIR, { recursive: true });
+  if (!existsSync(INVENTORY_DIR)) mkdirSync(INVENTORY_DIR, { recursive: true });
 }
 
 function parseArgs(argv) {
