@@ -71,13 +71,16 @@ Record `OUTPUT_PATH` (absolute) for all subsequent steps. All `specPath` values 
 
 Select features where `status === "keep"` (includes both `origin: "discovered"` and `origin: "added"`).
 
-**Topological sort** by `dependencies`:
-- Build DAG from `dependencies` edges.
-- Detect cycles → error with cycle details.
-- Sort so dependencies come before dependents.
-- If multiple valid orders, prefer: discovered before added, then by ID.
+**Topological sort** by `dependencies` — use the bundled engine, do **not** hand-roll a sort script:
 
-Let `orderedFeatures` be the sorted array.
+```bash
+node .specify/extensions/tupec/scripts/tupec.mjs topo
+# or: node .specify/extensions/tupec/scripts/tupec.mjs topo --json
+```
+
+- The engine builds the DAG from `dependencies`, **detects cycles**, and prints the order (deps before dependents).
+- **If it reports `CYCLE DETECTED`**, stop. Show the cycle chain to the user and ask them to fix the offending `dependencies` in `inventory.json` (a feature listing itself, or a mutual loop, is the usual cause). Do not retry until the cycle is gone.
+- Let `orderedFeatures` be the engine's output order. If multiple valid orders exist, the engine already prefers discovered-before-added, then by ID.
 
 ### 3. Dry Run Mode
 

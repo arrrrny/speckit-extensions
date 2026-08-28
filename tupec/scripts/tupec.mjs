@@ -342,6 +342,66 @@ async function cmdSetSpec(args) {
   console.log(`Recorded spec result for ${id}: ${args.status}`);
 }
 
+async function cmdTopo(args) {
+  const inv = loadInventory();
+  const feats = (inv.features || []).filter(f => f.status === 'keep');
+  const byId = {};
+  feats.forEach(f => byId[f.id] = f);
+  const adj = {};
+  feats.forEach(f => { adj[f.id] = (f.dependencies || []).filter(d => byId[d]); });
+
+  // DFS cycle detection (self-references and loops both surface here)
+  const WHITE = 0, GRAY = 1, BLACK = 2;
+  const color = {};
+  feats.forEach(f => color[f.id] = WHITE);
+  const stack = [];
+  let cycle = null;
+  function dfs(u) {
+    color[u] = GRAY; stack.push(u);
+    for (const v of adj[u]) {
+      if (color[v] === GRAY) { const i = stack.indexOf(v); cycle = stack.slice(i).concat(v); return true; }
+      if (color[v] === WHITE && dfs(v)) return true;
+    }
+    color[u] = BLACK; stack.pop();
+    return false;
+  }
+  for (const f of feats) { if (color[f.id] === WHITE && dfs(f.id)) break; }
+
+  if (cycle) {
+    process.stderr.write('CYCLE DETECTED:\n');
+    for (let i = 0; i < cycle.length - 1; i++) {
+      const a = byId[cycle[i]], b = byId[cycle[i + 1]];
+      process.stderr.write(`  ${a.id} (${a.title}) --depends on--> ${b.id} (${b.title})\n`);
+    }
+    process.exit(1);
+  }
+
+  // Kahn's algorithm: deps before dependents
+  const inDeg = {};
+  feats.forEach(f => inDeg[f.id] = adj[f.id].length);
+  const dependents = {};
+  feats.forEach(f => dependents[f.id] = []);
+  feats.forEach(f => adj[f.id].forEach(d => dependents[d].push(f.id)));
+  const queue = feats.filter(f => inDeg[f.id] === 0).map(f => f.id);
+  const order = [];
+  while (queue.length) {
+    const u = queue.shift();
+    order.push(u);
+    for (const w of dependents[u]) { if (--inDeg[w] === 0) queue.push(w); }
+  }
+
+  if (order.length !== feats.length) {
+    process.stderr.write(`WARNING: only ${order.length}/${feats.length} features ordered — unresolved deps\n`);
+    process.exit(2);
+  }
+  if (args.json) {
+    console.log(JSON.stringify({ cycle: false, count: order.length, order }, null, 2));
+  } else {
+    console.log(`No cycle. Topological order (${order.length} features, deps first):`);
+    order.forEach((id, i) => console.log(`  ${String(i + 1).padStart(3)}. ${id} (${byId[id].title})`));
+  }
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const cmd = args._.shift() || 'help';
@@ -354,8 +414,9 @@ async function main() {
       case 'chop': await cmdChop(args); break;
       case 'lock': await cmdLock(args); break;
       case 'set-spec': await cmdSetSpec(args); break;
+      case 'topo': await cmdTopo(args); break;
       default:
-        console.error(`Usage: tupec.mjs <init|list|add|chop|lock|set-spec> [args]`);
+        console.error(`Usage: tupec.mjs <init|list|add|chop|lock|set-spec|topo> [args]`);
         process.exit(1);
     }
   } catch (e) {
