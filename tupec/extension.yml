@@ -3,7 +3,7 @@ schema_version: "1.0"
 extension:
   id: tupec
   name: "TUPEC — Total Rewrite Feature Inventory"
-  version: "1.0.0"
+  version: "1.1.0"
   description: "Greenfield-rewrite planner that deeply analyzes an existing codebase to produce a complete feature inventory, then lets the user iterate (chop/add) before emitting greenfield specs for every surviving feature through the TDD cycle."
   author: arrrrny
   repository: https://github.com/arrrrny/speckit-extensions
@@ -51,6 +51,7 @@ tags:
 config:
   defaults:
     inventory_path: ".specify/tupec/"
+    output_path: ""
     scan_depth: "exhaustive"
     stack: ""
     constraints: []

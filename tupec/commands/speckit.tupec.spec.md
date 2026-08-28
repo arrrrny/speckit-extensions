@@ -16,6 +16,7 @@ Required:
 - `--lock` — **mandatory flag** to confirm the inventory is finalized and locked. Without this, the command refuses to run.
 
 Optional:
+- `--output <path>` / `path=<path>` — path to the NEW project where greenfield specs are written. Overrides `output_path` in config. **Never** a path inside the legacy codebase being scanned.
 - `--batch N` — override `spec_batch_size` from config (0 = all at once)
 - `--dry-run` — show the execution plan (topological order, specs to emit) without invoking specify
 - `--force` — skip the lock confirmation prompt (automated mode only; still requires `--lock` flag)
@@ -23,9 +24,12 @@ Optional:
 Examples:
 ```
 speckit.tupec.spec --lock
+speckit.tupec.spec --lock --output ~/Developer/forklift-rewrite
 speckit.tupec.spec --lock --batch 5
 speckit.tupec.spec --lock --dry-run
 ```
+
+**CRITICAL — specs are never written into the legacy code.** `tupec.scan` only *reads* the legacy project; all generated `specs/` directories and `rewrite-plan.md` are written into the resolved `OUTPUT_PATH` (a separate, new/rewrite project). If `output_path` is unset in config and no `--output` is given, the command **asks the user** for this path before emitting anything.
 
 ## Prerequisites
 
@@ -45,6 +49,23 @@ Read `.specify/tupec/inventory.json` and `.specify/extensions/tupec/tupec-config
 Verify `locked: true`. If false:
 - Interactive: Show summary (counts, kept features list) and ask: `Lock inventory and proceed with spec emission? This cannot be undone. (yes/no)` — on `yes`, set `locked: true` and continue; on `no`, abort.
 - Automated / `--force`: If `--lock` flag present, set `locked: true` and continue; otherwise refuse with "Inventory not locked. Run with --lock to lock and proceed."
+
+### 1b. Resolve Output Path (where specs are written)
+
+This is the path to the **new/rewrite project** — a directory that is separate from the legacy codebase scanned by `tupec.scan`. Specs are written here, never into the legacy code.
+
+Resolve `OUTPUT_PATH` in this order:
+1. `--output <path>` / `path=<path>` argument (if provided).
+2. `output_path` in `tupec-config.yml` (if non-empty).
+3. **If still unresolved, PROMPT the user**: "Where should the greenfield specs be written? Enter the path to a new or existing project directory (this must NOT be the legacy codebase being rewritten):"
+
+Then normalize and validate:
+- Expand `~` and resolve to an absolute path.
+- **Safety check**: if `OUTPUT_PATH` is the same as, or nested inside, the legacy `targetPath` recorded in `inventory.json`, refuse with a clear error and re-prompt. We must never write specs into the legacy code.
+- If the directory does not exist, create it (interactive: confirm first; automated/`--force`: create silently).
+- If `OUTPUT_PATH` is `"self"`, treat it as the current working directory (legacy behavior) — but still warn that this mixes specs with the host project.
+
+Record `OUTPUT_PATH` (absolute) for all subsequent steps. All `specPath` values in `specResults` and `rewrite-plan.md` are written relative to `OUTPUT_PATH`.
 
 ### 2. Filter & Sort Features
 
@@ -103,32 +124,39 @@ If `spec_batch_size > 0` (or `--batch N`), process in batches of that size. Othe
 
 For each batch:
 - For each feature in batch (in topological order):
-  - **Invoke `__SPECKIT_COMMAND_SPECIFY__`** with arguments that cause it to write a greenfield spec for this feature.
+  - **Invoke `__SPECKIT_COMMAND_SPECIFY__` from inside `OUTPUT_PATH`** so the spec is written into the new project, never the legacy code:
 
-  The invocation must pass:
+    ```bash
+    cd "<OUTPUT_PATH>" && __SPECKIT_COMMAND_SPECIFY__ "<feature title> — greenfield spec (TUPEC <feature-id>)"
+    ```
+
+    The invocation must pass:
   - Feature title, description, evidence (as behavioral evidence only), category, size
   - Dependencies (as references to other specs being written)
   - The `rewriteContext` as additional context/constraints
   - A suggested spec slug: `tupec-<feature-id>-<kebab-title>` (e.g., `tupec-F001-http-task-api`)
   - A suggested branch: `rewrite/tupec-<feature-id>-<kebab-title>`
 
-  **Critical**: The spec must describe the **NEW system only**. It may cite old evidence as *behavioral reference* (e.g., "acceptance criterion: task submission returns 201 with task ID — see old `task_controller.dart:15`"), but must never reference old implementation details as design guidance.
+  **Critical**: The spec must describe the **NEW system only**. It may cite old evidence as *behavioral reference* (e.g., "acceptance criterion: task submission returns 201 with task ID — see old `task_controller.dart:15`"), but must never reference old implementation details as design guidance. The spec file is created under `OUTPUT_PATH/specs/…`, completely outside the legacy codebase.
 
-  - **If `tdd: true`**: After spec is written, immediately invoke `__SPECKIT_COMMAND_TDD_PLAN__` for that feature to derive the test list and make test tasks mandatory.
+  - **If `tdd: true`**: After spec is written, immediately invoke `__SPECKIT_COMMAND_TDD_PLAN__` for that feature (also from inside `OUTPUT_PATH`) to derive the test list and make test tasks mandatory.
 
   - Record result in `specResults[]`: `{ featureId, specPath, branch, status: "success" | "skipped" | "failed", error? }`
+    - `specPath` is the **absolute** path under `OUTPUT_PATH` (e.g. `/abs/forklift-rewrite/specs/001-tupec-F001-http-task-api/spec.md`)
     - `skipped`: spec already exists at expected path (idempotent)
     - `failed`: specify or tdd.plan threw; record error, continue to next feature
 
 ### 6. Write rewrite-plan.md
 
-After all batches, write `.specify/tupec/rewrite-plan.md`:
+After all batches, write **`rewrite-plan.md` into `OUTPUT_PATH`** (the new project root, alongside the emitted `specs/`). This keeps the rewrite index together with the specs so the new project is self-contained and transportable.
 
 ```markdown
 # Rewrite Plan: <target-project-name>
 
 - **Generated**: 2026-08-26T10:30:00Z
-- **Inventory**: .specify/tupec/inventory.json (locked)
+- **Inventory**: <host-project>/.specify/tupec/inventory.json (locked)
+- **Output Path**: <OUTPUT_PATH>   ← all specs below live here, NOT in the legacy code
+- **Legacy Scanned**: <targetPath from inventory.json>
 - **Stack**: zuraffa
 - **TDD**: true
 - **Features Speced**: 38 / 42 kept
@@ -137,7 +165,7 @@ After all batches, write `.specify/tupec/rewrite-plan.md`:
 
 ## Spec Map
 
-| Feature | Title | Spec Path | Branch | Status |
+| Feature | Title | Spec Path (under <OUTPUT_PATH>) | Branch | Status |
 |---------|-------|-----------|--------|--------|
 | F001 | HTTP Task API | specs/001-tupec-F001-http-task-api/spec.md | rewrite/tupec-F001-http-task-api | success |
 | F002 | Scheduler | specs/002-tupec-F002-scheduler/spec.md | rewrite/tupec-F002-scheduler | success |
@@ -166,7 +194,8 @@ After all batches, write `.specify/tupec/rewrite-plan.md`:
   "skippedCount": 4,
   "stack": "zuraffa",
   "tdd": true,
-  "rewritePlanPath": ".specify/tupec/rewrite-plan.md"
+  "outputPath": "<OUTPUT_PATH>",
+  "rewritePlanPath": "<OUTPUT_PATH>/rewrite-plan.md"
 }
 ```
 
@@ -176,12 +205,13 @@ Run `tupec.mjs list` to update human-readable render.
 
 ### 9. Report Back
 
-- Path to `rewrite-plan.md`
+- Path to `rewrite-plan.md` (in `OUTPUT_PATH`, the new project)
+- **Where specs live**: `<OUTPUT_PATH>/specs/…` — confirm this is the new project, NOT the legacy codebase
 - Counts: speced, skipped, failed
 - Any failures listed with feature ID and error
 - Next steps:
-  - Review `rewrite-plan.md`
-  - For each feature, run implementation via the host's workflow (spec → plan → tasks → implement → TDD loop)
+  - Review `rewrite-plan.md` in the new project
+  - For each feature, run implementation via the host's workflow (spec → plan → tasks → implement → TDD loop) — operate from `OUTPUT_PATH` so work lands in the rewrite project
   - The branches in `rewrite-plan.md` are suggested isolation branches for each feature's implementation
 
 ## Guardrails

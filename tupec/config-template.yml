@@ -1,8 +1,17 @@
 # TUPEC — Total Rewrite Feature Inventory Configuration
 # Copied to .specify/extensions/tupec/tupec-config.yml on install
 
-# Root directory for TUPEC state files (inventory.json, inventory.md, rewrite-plan.md, history)
+# Root directory for TUPEC state files (inventory.json, inventory.md, history).
+# This lives NEXT TO the extension (the host project), NOT in the legacy code being scanned.
 inventory_path: ".specify/tupec/"
+
+# Where the GREENFIELD specs are written. This MUST be a path to a SEPARATE
+# project (the new/rewrite target) — never the legacy codebase being scanned.
+# Leave empty to be prompted at `tupec.spec` time. Supports:
+#   - an absolute or ~/ path (e.g. "~/Developer/forklift-rewrite")
+#   - "self" → write into the current host project (legacy behavior)
+# If the directory does not exist it will be created.
+output_path: ""
 
 # Scan depth for the initial analysis pass
 # - quick: only entrypoints and main routes

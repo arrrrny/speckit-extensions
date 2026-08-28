@@ -22,7 +22,7 @@ scan → chop/add (iterate until satisfied) → spec --lock
 | `speckit.tupec.chop <ids...> --reason "..."` | Mark features chopped (preserves audit trail) |
 | `speckit.tupec.add --title "..." --desc "..." --rationale "..." --category "..." [--deps F001,F002]` | Add new feature (origin: added, id A001...) |
 | `speckit.tupec.list [--json]` | Render inventory: kept/chopped/added, counts, deps, lock state |
-| `speckit.tupec.spec --lock` | Emit greenfield specs for all kept features via specify + TDD |
+| `speckit.tupec.spec --lock` | Emit greenfield specs for all kept features via specify + TDD, into `output_path` |
 
 All commands operate on `.specify/tupec/inventory.json` via `tupec/scripts/tupec.mjs` (deterministic subcommands: `init`, `list`, `add`, `chop`, `lock`, `set-spec`).
 
@@ -32,12 +32,39 @@ All commands operate on `.specify/tupec/inventory.json` via `tupec/scripts/tupec
 
 ```yaml
 inventory_path: ".specify/tupec/"
+output_path: ""                 # where greenfield specs are written (separate NEW project)
 scan_depth: "exhaustive"        # quick | normal | exhaustive
 stack: ""                       # e.g., "zuraffa" — injected as hard constraint
 constraints: []                 # free-form hard constraints per spec
 tdd: true                       # chain __SPECKIT_COMMAND_TDD_PLAN__ per feature
 spec_batch_size: 0              # 0 = all at once
 ```
+
+### Where do the specs go?
+
+**Never into the legacy code.** `tupec.scan` only *reads* the legacy project (recorded as
+`targetPath` in `inventory.json`). The generated `specs/…` directories and `rewrite-plan.md`
+are written into a **separate new/rewrite project** — the `output_path`:
+
+- Set `output_path` in config, pass `--output <path>` to `tupec.spec`, or **let the command
+  prompt you** for it (it will not emit specs until a path is resolved).
+- `tupec.spec` refuses to write into the legacy `targetPath` (or anything nested inside it).
+- If the directory does not exist, it is created.
+- `rewrite-plan.md` and all `specs/` land inside `output_path`, so the new project is
+  self-contained and transportable. The `inventory.json`/`inventory.md` (analysis artifacts)
+  stay in the host project's `.specify/tupec/`.
+
+### Config fields
+
+| Field | Meaning |
+|-------|---------|
+| `inventory_path` | Host-side state dir for `inventory.json` / `inventory.md` (analysis artifacts). |
+| `output_path` | **New/rewrite project** where specs are written. Empty → prompted at `tupec.spec`. Supports absolute/`~/` paths or `"self"` (current host project, legacy behavior). |
+| `scan_depth` | `quick` / `normal` / `exhaustive` analysis breadth. |
+| `stack` | Target rewrite stack (e.g. `zuraffa`) injected as a hard spec constraint. |
+| `constraints` | Free-form hard constraints injected into every spec. |
+| `tdd` | Chain `__SPECKIT_COMMAND_TDD_PLAN__` per feature after spec emission. |
+| `spec_batch_size` | `0` = all features at once; `N` = process in batches of `N`. |
 
 ### Stack: zuraffa
 
@@ -51,11 +78,16 @@ No hand-rolled architecture, no legacy patterns carried over.
 ## State File Layout
 
 ```
+# Host project (where the extension is installed; analysis artifacts only)
 .specify/tupec/
-├── inventory.json      # Machine state: features[], history[], locked, configSnapshot
+├── inventory.json      # Machine state: features[], history[], locked, configSnapshot, outputPath
 ├── inventory.md        # Human-readable render of inventory.json
-├── rewrite-plan.md     # Emitted by tupec.spec: feature id → spec path → branch
 └── history/            # (optional) timestamped snapshots
+
+# output_path / NEW rewrite project (created by tupec.spec; the actual specs)
+<output_path>/
+├── specs/001-tupec-F001-.../spec.md   # greenfield specs (one per kept feature)
+└── rewrite-plan.md                    # feature id → spec path → branch index
 ```
 
 ### `inventory.json` Schema (simplified)
@@ -159,11 +191,12 @@ speckit.tupec.spec --lock
 ```
 
 This will:
-1. Lock the inventory (confirmation prompt with summary)
-2. Topologically sort kept features by `dependencies`
-3. For each feature, invoke `__SPECKIT_COMMAND_SPECIFY__` with injected constraints
-4. Chain `__SPECKIT_COMMAND_TDD_PLAN__` per feature (test list first)
-5. Write `.specify/tupec/rewrite-plan.md`:
+1. Resolve `output_path` (config `--output`, or prompt) — the new/rewrite project; refuses the legacy `targetPath`
+2. Lock the inventory (confirmation prompt with summary)
+3. Topologically sort kept features by `dependencies`
+4. For each feature, invoke `__SPECKIT_COMMAND_SPECIFY__` (from inside `output_path`) with injected constraints
+5. Chain `__SPECKIT_COMMAND_TDD_PLAN__` per feature (test list first)
+6. Write `rewrite-plan.md` **into `output_path`** (alongside the emitted `specs/`):
 
 ```markdown
 # Rewrite Plan: forklift → zuraffa
