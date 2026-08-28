@@ -6,12 +6,27 @@ Generates a beautiful markdown dashboard showing every spec at a glance — stag
 
 | Command | Purpose |
 |---------|---------|
-| `speckit.stats.report` | Main generator — scans `specs/*/`, builds dashboard, writes `SPEC-STATS.md` + `stats.json` |
-| `speckit.stats.open` | View all specs not `complete` — stuck stage, next action, stale warnings |
-| `speckit.stats.not-green` | View specs with `red` or `unknown` health — evidence quoted, command to get green |
-| `speckit.stats.runs` | Execute the verified test command per spec, record results, refresh health |
+| `speckit.spec-stats.report` | Main generator — scans `specs/*/`, builds dashboard, writes `SPEC-STATS.md` + `stats.json` |
+| `speckit.spec-stats.open` | View all specs not `complete` — stuck stage, next action, stale warnings |
+| `speckit.spec-stats.not-green` | View specs with `red` or `unknown` health — evidence quoted, command to get green |
+| `speckit.spec-stats.runs` | Execute the verified test command per spec, record results, refresh health |
 
-**Only `speckit.stats.runs` executes anything.** The other three are read-only scans.
+**Only `speckit.spec-stats.runs` executes anything.** The other three are read-only scans.
+
+### TDD deep stats
+
+When the **TDD extension is installed** in the project (detected via `.specify/memory/tdd-profile.md` or `.specify/extensions/tdd`), the dashboard adds a **TDD Deep Stats** table. For every feature with a `tdd/test-list.md` it reports:
+
+| Column | Meaning |
+|--------|---------|
+| `A` | acceptance behaviors (`A1`, `A2`, …) |
+| `U` | unit behaviors (`U1`, `U2`, …) |
+| `char` | characterization behaviors (`kind: characterization`) |
+| `DONE` | behaviors in the `DONE` state |
+| `loop` | `full` (outer + inner derived), `outer-only` (acceptance only), `inside-out`, or `absent` (no TDD list) |
+| `tasks.md` | `updated` (TDD behavior markers present in `tasks.md`) or `absent` |
+
+A `total` row sums the numeric columns. This lets you see, at a glance, how far each feature's red-green-refactor loop has progressed.
 
 ---
 
@@ -163,26 +178,26 @@ Health is derived from **TDD evidence only** — never inferred from task comple
 
 ## Command Reference
 
-### `speckit.stats.report`
+### `speckit.spec-stats.report`
 
 ```bash
 # Full scan + render (writes .specify/stats/SPEC-STATS.md + .specify/stats/stats.json)
-speckit.stats.report
+speckit.spec-stats.report
 
 # Scan only → stdout JSON (no files written)
-speckit.stats.report --json
+speckit.spec-stats.report --json
 
 # Scan only → custom output path
-speckit.stats.report --out /tmp/stats.json
+speckit.spec-stats.report --out /tmp/stats.json
 
 # Render only from existing stats.json → custom markdown path
-speckit.stats.report --render --in .specify/stats/stats.json --out /tmp/report.md
+speckit.spec-stats.report --render --in .specify/stats/stats.json --out /tmp/report.md
 
 # Help
-speckit.stats.report --help
+speckit.spec-stats.report --help
 ```
 
-**Subcommands** (also callable directly via `node spec-stats.mjs`):
+**Subcommands** (also callable directly via `node .specify/extensions/spec-stats/scripts/spec-stats.mjs`):
 - `scan` — emit stats.json
 - `render` — stats.json → markdown
 - `report` — scan + render (default)
@@ -190,51 +205,51 @@ speckit.stats.report --help
 - `not-green` — on-demand not-green view
 - `record-run` — append a run record to runs.json
 
-### `speckit.stats.open`
+### `speckit.spec-stats.open`
 
 ```bash
 # Show all specs not in 'complete' stage
-speckit.stats.open
+speckit.spec-stats.open
 
 # Show with stale warning (default 14 days)
-speckit.stats.open --stale-after 14
+speckit.spec-stats.open --stale-after 14
 
 # JSON output
-speckit.stats.open --json
+speckit.spec-stats.open --json
 ```
 
 Shows: spec, stage, next artifact/command needed, days since last touch, stale flag.
 
-### `speckit.stats.not-green`
+### `speckit.spec-stats.not-green`
 
 ```bash
 # Show specs with red or unknown health
-speckit.stats.not-green
+speckit.spec-stats.not-green
 
 # JSON output
-speckit.stats.not-green --json
+speckit.spec-stats.not-green --json
 ```
 
 Shows: spec, health, exact evidence line from cycle-log.md (or "no evidence recorded"), command to run for evidence (`__SPECKIT_COMMAND_TDD_RUN__` or suite command from `.specify/memory/tdd-profile.md`).
 
-### `speckit.stats.runs`
+### `speckit.spec-stats.runs`
 
 ```bash
 # Run tests for active feature (default)
-speckit.stats.runs
+speckit.spec-stats.runs
 
 # Run tests for all specs
-speckit.stats.runs --all
+speckit.spec-stats.runs --all
 
 # Run tests for specific spec(s) by id/slug
-speckit.stats.runs 001-nudge-stalled-panes
-speckit.stats.runs 002-cr-ziki-kimi-fallback 003-agent-in-the-loop
+speckit.spec-stats.runs 001-nudge-stalled-panes
+speckit.spec-stats.runs 002-cr-ziki-kimi-fallback 003-agent-in-the-loop
 
 # Dry run — print what would run without executing
-speckit.stats.runs --dry-run --all
+speckit.spec-stats.runs --dry-run --all
 
 # Help
-speckit.stats.runs --help
+speckit.spec-stats.runs --help
 ```
 
 **Critical behavior**:
@@ -318,7 +333,7 @@ emoji: true                                    # Emoji in legend/health column
 specify extension add spec-stats
 ```
 
-Registers `speckit.stats.*` commands and copies `config-template.yml` to `.specify/extensions/spec-stats/spec-stats-config.yml`.
+Registers `speckit.spec-stats.*` commands and copies `config-template.yml` to `.specify/extensions/spec-stats/spec-stats-config.yml`.
 
 ---
 
