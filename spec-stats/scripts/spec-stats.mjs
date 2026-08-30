@@ -7,6 +7,8 @@
 //   render [--in <stats.json>] [--out <path>]                  stats.json -> markdown
 //   open   [--stale-after <days>] [--json]                      specs not complete
 //   not-green [--json]                                         specs with red/unknown health
+//   reconcile [--all|<spec>...] [--dry-run] [--drop-mark checked|unchecked]
+//                                                          fix tasks.md checkboxes from TDD behaviors
 //   runs   [--all|<spec>...] [--dry-run]                       run verified suite per spec
 //   record-run --spec <s> --status pass|fail --ms <n> [--tail "..."]
 //
@@ -367,6 +369,187 @@ function notGreenView(data, cfg) {
 }
 
 // ---------------------------------------------------------------------------
+// Reconcile — fix tasks.md checkboxes based on TDD test-list.md DONE behaviors
+// ---------------------------------------------------------------------------
+
+// Parse test-list.md and return behavior IDs with their states.
+function parseTestListFull(text) {
+  const behaviors = new Map(); // id → state
+  for (const line of text.split('\n')) {
+    if (!line.startsWith('|')) continue;
+    const cells = line.split('|').slice(1, -1).map((c) => c.trim());
+    if (cells.length < 6) continue;
+    const id = cells[0];
+    if (!/^[AUC]\d+$/.test(id)) continue;
+    const state = (cells[4] || '').toUpperCase();
+    behaviors.set(id, state);
+  }
+  return behaviors;
+}
+
+// Extract behavior markers from a task line (e.g., [A1], [U8], [U44]).
+function extractBehaviorMarkers(line) {
+  const markers = [];
+  const re = /\[([AUC]\d+)\]/g;
+  let m;
+  while ((m = re.exec(line)) !== null) {
+    markers.push(m[1]);
+  }
+  return markers;
+}
+
+// Check if a file path referenced in a task exists.
+function extractFilePaths(line) {
+  const paths = [];
+  // Match backtick-quoted paths: `lib/src/foo.dart`
+  const backtickRe = /`([^`]+\.[a-z]{1,5})`/g;
+  let m;
+  while ((m = backtickRe.exec(line)) !== null) {
+    paths.push(m[1]);
+  }
+  // Match bare paths: lib/src/foo.dart or test/unit/foo_test.dart
+  const bareRe = /((?:lib|test|bin|src)\/[\w/._-]+\.(?:dart|ts|js|py|go|rs))/g;
+  while ((m = bareRe.exec(line)) !== null) {
+    if (!paths.includes(m[1])) paths.push(m[1]);
+  }
+  return paths;
+}
+
+function reconcileSpec(specDir, cfg, opts) {
+  const tasksPath = path.join(specDir, 'tasks.md');
+  const tlPath = path.join(specDir, 'tdd', 'test-list.md');
+  const dryRun = opts.dryRun;
+  const dropMark = opts.dropMark || 'unchecked';
+
+  // Read tasks.md
+  if (!fs.existsSync(path.join(ROOT, tasksPath))) {
+    return { spec: specDir, changed: 0, skipped: 0, verified: 0, needsCheck: 0, error: 'no tasks.md' };
+  }
+  const tasksText = fs.readFileSync(path.join(ROOT, tasksPath), 'utf8');
+
+  // Parse test-list.md for DONE/DROPPED behaviors
+  let doneBehaviors = new Set();
+  let droppedBehaviors = new Set();
+  const hasTestList = fs.existsSync(path.join(ROOT, tlPath));
+  if (hasTestList) {
+    const tlText = fs.readFileSync(path.join(ROOT, tlPath), 'utf8');
+    const behaviors = parseTestListFull(tlText);
+    for (const [id, state] of behaviors) {
+      if (state === 'DONE') doneBehaviors.add(id);
+      else if (state === 'DROPPED') droppedBehaviors.add(id);
+    }
+  }
+
+  // Process each line in tasks.md
+  const lines = tasksText.split('\n');
+  let changed = 0, skipped = 0, verified = 0, needsCheck = 0;
+  const report = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const taskMatch = line.match(/^(\s*[-*]\s*)\[([ xX])\](.*)$/);
+    if (!taskMatch) continue;
+
+    const [, prefix, check, rest] = taskMatch;
+    const alreadyChecked = check !== ' ';
+    const markers = extractBehaviorMarkers(rest);
+
+    if (alreadyChecked) {
+      skipped++;
+      continue;
+    }
+
+    let shouldCheck = false;
+    let reason = '';
+
+    // Strategy 1: behavior markers — check if all marked behaviors are DONE
+    if (markers.length > 0) {
+      const allDone = markers.every((m) => doneBehaviors.has(m));
+      const anyDropped = markers.some((m) => droppedBehaviors.has(m));
+
+      if (allDone) {
+        shouldCheck = true;
+        reason = `behaviors [${markers.join(', ')}] all DONE`;
+      } else if (anyDropped && dropMark === 'checked') {
+        shouldCheck = true;
+        reason = `behaviors [${markers.join(', ')}] DROPPED (drop-mark=checked)`;
+      }
+    }
+
+    // Strategy 2: no behavior markers — check file existence
+    if (!shouldCheck && markers.length === 0) {
+      const paths = extractFilePaths(rest);
+      if (paths.length > 0) {
+        const allExist = paths.every((p) => fs.existsSync(path.join(ROOT, p)));
+        if (allExist) {
+          shouldCheck = true;
+          reason = `files exist: ${paths.join(', ')}`;
+        } else {
+          const missing = paths.filter((p) => !fs.existsSync(path.join(ROOT, p)));
+          needsCheck++;
+          report.push(`  ⚠ T${String(i).padStart(3, '0')} needs check: missing ${missing.join(', ')}`);
+        }
+      } else {
+        // No paths to verify — can't auto-check
+        needsCheck++;
+      }
+    }
+
+    if (shouldCheck) {
+      lines[i] = `${prefix}[x]${rest}`;
+      changed++;
+      verified++;
+      report.push(`  ✓ ${rest.trim().slice(0, 70)} — ${reason}`);
+    }
+  }
+
+  // Write back if changed
+  if (changed > 0 && !dryRun) {
+    fs.writeFileSync(path.join(ROOT, tasksPath), lines.join('\n'));
+  }
+
+  return { spec: specDir, changed, skipped, verified, needsCheck, report, doneBehaviors: doneBehaviors.size, droppedBehaviors: droppedBehaviors.size };
+}
+
+function reconcileView(targets, opts) {
+  const lines = ['# Spec Stats — Reconcile', ''];
+  const dryRun = opts.dryRun;
+  if (dryRun) lines.push('_Dry run — no files modified._');
+  lines.push('');
+
+  let totalChanged = 0, totalSkipped = 0, totalNeedsCheck = 0;
+
+  for (const t of targets) {
+    const specDir = t;
+    const specName = path.basename(t);
+    const result = reconcileSpec(specDir, {}, opts);
+
+    if (result.error) {
+      lines.push(`- **${specName}**: ${result.error}`);
+      continue;
+    }
+
+    lines.push(`- **${specName}**: ${result.changed} checked, ${result.skipped} already done, ${result.needsCheck} need manual check`);
+    if (result.report && result.report.length > 0) {
+      lines.push(...result.report);
+    }
+    totalChanged += result.changed;
+    totalSkipped += result.skipped;
+    totalNeedsCheck += result.needsCheck;
+  }
+
+  lines.push('');
+  lines.push(`**Total**: ${totalChanged} tasks reconciled, ${totalSkipped} already correct, ${totalNeedsCheck} need manual check`);
+
+  if (dryRun) {
+    lines.push('');
+    lines.push('_Run without --dry-run to apply changes._');
+  }
+
+  return lines.join('\n');
+}
+
+// ---------------------------------------------------------------------------
 // Runs view (execute verified suite per spec)
 // ---------------------------------------------------------------------------
 
@@ -479,6 +662,22 @@ function main() {
   if (cmd === 'not-green') {
     const data = scan(cfg);
     writeOut(notGreenView(data, cfg), args.out);
+    return;
+  }
+
+  if (cmd === 'reconcile') {
+    let targets;
+    if (args.all) {
+      targets = listSpecDirs(cfg).map((s) => path.join(cfg.specs_dir, s.dir));
+    } else if (args._.length) {
+      targets = args._.map((t) => t.startsWith(cfg.specs_dir) ? t : path.join(cfg.specs_dir, t));
+    } else if (exists(path.join('.specify', 'feature.json'))) {
+      targets = [JSON.parse(read(path.join('.specify', 'feature.json'))).feature_directory];
+    } else {
+      targets = listSpecDirs(cfg).map((s) => path.join(cfg.specs_dir, s.dir));
+    }
+    const out = reconcileView(targets, { dryRun: !!args['dry-run'], dropMark: args['drop-mark'] || 'unchecked' });
+    writeOut(out, args.out);
     return;
   }
 

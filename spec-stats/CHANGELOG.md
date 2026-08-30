@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0 - 2026-08-30
+
+- **New `reconcile` command**: fixes stale `tasks.md` checkboxes by cross-referencing actual implementation state. Two strategies: (1) behavior-based — marks tasks with DONE behavior markers in `tdd/test-list.md` as checked; (2) file-existence-based — marks tasks referencing existing files as checked. Supports `--dry-run`, `--all`, specific spec targets, and `--drop-mark checked|unchecked` for DROPPED behaviors.
+
 ## 1.1.0 - 2026-08-28
 
 - **Namespace fix**: commands renamed `speckit.stats.*` → `speckit.spec-stats.*` (and command files) so the extension installs under its own namespace.

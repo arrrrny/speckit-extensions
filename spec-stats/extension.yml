@@ -3,8 +3,8 @@ schema_version: "1.0"
 extension:
   id: spec-stats
   name: "Spec Stats — Spec Dashboard at a Glance"
-  version: "1.1.0"
-  description: "Generates a beautiful markdown dashboard showing every spec at a glance — stage, progress, health, last-updated — so the user can see the whole portfolio without opening a dozen folders. Plus three on-demand views: open (unfinished), not-green (no green test evidence / failing), and runs (actually execute the recorded test command per spec on demand and record the result)."
+  version: "1.2.0"
+  description: "Generates a beautiful markdown dashboard showing every spec at a glance — stage, progress, health, last-updated — so the user can see the whole portfolio without opening a dozen folders. Plus four on-demand views: open (unfinished), not-green (no green test evidence / failing), reconcile (fix tasks.md checkboxes from actual implementation state), and runs (actually execute the recorded test command per spec on demand and record the result)."
   author: arrrrny
   repository: https://github.com/arrrrny/speckit-extensions
   homepage: https://github.com/arrrrny/speckit-extensions
@@ -29,6 +29,9 @@ provides:
     - name: speckit.spec-stats.not-green
       file: commands/speckit.spec-stats.not-green.md
       description: "On-demand view of specs whose latest test evidence is red or unknown, with the exact evidence line quoted from tdd/cycle-log.md and the command that would produce evidence"
+    - name: speckit.spec-stats.reconcile
+      file: commands/speckit.spec-stats.reconcile.md
+      description: "Reconcile tasks.md checkboxes against actual implementation — cross-references TDD test-list.md DONE behaviors and file existence to mark tasks that were implemented but never checked"
     - name: speckit.spec-stats.runs
       file: commands/speckit.spec-stats.runs.md
       description: "On-demand execution — reads verified suite command from .specify/memory/tdd-profile.md, runs it for selected specs (--all, spec id/slug, or default active feature), captures pass/fail + duration + tail, appends run record to .specify/stats/runs.json, refreshes dashboard health column"
