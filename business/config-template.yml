@@ -1,0 +1,19 @@
+# Software Business Management Extension Configuration
+# Copied to .specify/extensions/business/business-config.yml on install
+
+# The product this business is. Used as the default name in init prompts and
+# logs. Change it to your own product, or leave "ZikZak" if that is you.
+product: "ZikZak"
+
+# Currency used for revenue / pricing. ISO 4217 code. The KPI target math in
+# review assumes this is the unit of the revenue_streams amounts.
+currency: "USD"
+
+# The 2 PM daily deadline for the single most important task. The daily command
+# frames every task as "done by <daily_deadline>".
+daily_deadline: "14:00"
+
+# Which bundled stack reference init uses to seed the product's strengths and
+# pipeline. "zikzak" is the only shipped reference today; it carries the
+# serialized website configs and the near-automation-ready price pipeline.
+stack_reference: "zikzak"

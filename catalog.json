@@ -1,8 +1,43 @@
 {
   "schema_version": "1.0",
-  "updated_at": "2026-08-28T00:00:00Z",
+  "updated_at": "2026-08-31T12:00:00Z",
   "catalog_url": "https://raw.githubusercontent.com/arrrrny/speckit-extensions/main/catalog.json",
   "extensions": {
+    "business": {
+      "id": "business",
+      "name": "Software Business Management",
+      "version": "1.0.0",
+      "description": "Run a software business as a single source of truth in Markdown. Init captures vision, mission, milestones, KPIs, revenue streams, offers, core values, and strategy-vs-tactics (seeded with the ZikZak price-comparison stack, ARRRRNY's daily motto + manifesto, and the device-side / disconnected moat), then each morning you log the ONE task to ship by 2 PM and get an honest alignment read against your mission, next milestone, values, and strategy — a sparring partner that trusts your gut, not just a critic.",
+      "author": "arrrrny",
+      "repository": "https://github.com/arrrrny/speckit-extensions",
+      "homepage": "https://github.com/arrrrny/speckit-extensions",
+      "documentation": "https://github.com/arrrrny/speckit-extensions/blob/main/business/README.md",
+      "changelog": "https://github.com/arrrrny/speckit-extensions/blob/main/business/CHANGELOG.md",
+      "license": "MIT",
+      "category": "strategy",
+      "effect": "read-write",
+      "requires": {
+        "speckit_version": ">=0.9.0"
+      },
+      "provides": {
+        "commands": 3,
+        "hooks": 0
+      },
+      "tags": [
+        "business",
+        "strategy",
+        "focus",
+        "revenue",
+        "product",
+        "pmf"
+      ],
+      "download_url": "https://github.com/arrrrny/speckit-extensions/releases/download/business-v1.0.0/business.zip",
+      "verified": false,
+      "downloads": 0,
+      "stars": 0,
+      "created_at": "2026-08-31T00:00:00Z",
+      "updated_at": "2026-08-31T00:00:00Z"
+    },
     "gym": {
       "id": "gym",
       "name": "GYM — Operator Forging",
@@ -207,6 +242,55 @@
       "stars": 0,
       "created_at": "2026-08-26T00:00:00Z",
       "updated_at": "2026-08-26T00:00:00Z"
+    },
+    "md-doctor": {
+      "id": "md-doctor",
+      "name": "MD Doctor",
+      "version": "1.0.0",
+      "description": "Diagnose and grade the truthfulness of every agent-written .md file against living ground truth (git history, .memsearch records, and TDD verification), keep a run history, and re-evaluate what changed week over week. Grades each doc 0-100 and suggests update/delete/create.",
+      "author": "arrrrny",
+      "repository": "https://github.com/arrrrny/speckit-extensions",
+      "homepage": "https://github.com/arrrrny/speckit-extensions",
+      "documentation": "https://github.com/arrrrny/speckit-extensions/blob/main/md-doctor/README.md",
+      "changelog": "https://github.com/arrrrny/speckit-extensions/blob/main/md-doctor/CHANGELOG.md",
+      "license": "MIT",
+      "category": "quality",
+      "effect": "read-write",
+      "requires": {
+        "speckit_version": ">=0.9.0",
+        "tools": [
+          {
+            "name": "git",
+            "required": true
+          },
+          {
+            "name": "jq",
+            "required": true
+          }
+        ]
+      },
+      "provides": {
+        "commands": 5,
+        "hooks": 1
+      },
+      "tags": [
+        "md-doctor",
+        "documentation",
+        "truthfulness",
+        "fact-check",
+        "stale-docs",
+        "quality",
+        "tdd",
+        "ground-truth",
+        "spec-kit",
+        "spec-kit-extension"
+      ],
+      "download_url": "https://github.com/arrrrny/speckit-extensions/releases/download/md-doctor-v1.0.0/md-doctor.zip",
+      "verified": false,
+      "downloads": 0,
+      "stars": 0,
+      "created_at": "2026-08-31T00:00:00Z",
+      "updated_at": "2026-08-31T00:00:00Z"
     }
   }
 }

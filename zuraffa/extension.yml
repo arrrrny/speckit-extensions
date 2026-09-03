@@ -1,0 +1,50 @@
+schema_version: "1.0"
+
+extension:
+  id: zuraffa
+  name: "Zuraffa Extension"
+  version: "1.0.0"
+  description: "Zuraffa AI-first clean architecture contract for Dart/Flutter: owns the spec template, injects the non-negotiable framework constitution, and delegates the TDD loop to zfa commands (deterministic engine)."
+  author: arrrrny
+  repository: https://github.com/arrrrny/speckit-extensions
+  homepage: https://github.com/arrrrny/zuraffa
+  license: MIT
+
+requires:
+  speckit_version: ">=0.11.9"
+
+provides:
+  templates:
+    - name: spec-template
+      file: templates/spec-template.md
+      description: "Zuraffa domain contract: Product Context (type/platforms/layers), Architecture (Key Entities, External Dependencies & Contracts, Layer Contracts), zuraffa Non-Negotiables. Template version zuraffa-1.0 — zfa tdd plan pins and verifies this."
+
+  commands:
+    - name: speckit.zuraffa.constitution
+      file: commands/speckit.zuraffa.constitution.md
+      description: "Inject the zuraffa non-negotiable principles into the project constitution (framework only, clean layers, Zorphy entities, mocks-before-reals, TDD gates sacred, Result types)"
+    - name: speckit.zuraffa.check
+      file: commands/speckit.zuraffa.check.md
+      description: "Verify the project is zuraffa-conformant: template resolves from this extension, constitution has the principles, zfa is on PATH, .zfa.json exists, tdd profile is zfa-wired"
+
+hooks:
+  after_init:
+    command: speckit.zuraffa.constitution
+    optional: false
+    prompt: "Inject the zuraffa non-negotiable principles into the constitution?"
+    description: "Adds the framework constitution principles to .specify/memory/constitution.md so every downstream skill enforces them"
+  after_specify:
+    command: speckit.zuraffa.check
+    optional: true
+    prompt: "Verify zuraffa conformance of the generated spec?"
+    description: "Checks the spec was authored from the zuraffa template (template_version marker present, mandatory sections filled)"
+
+tags:
+  - zuraffa
+  - clean-architecture
+  - dart
+  - flutter
+  - ai-first
+  - spec-kit-extension
+  - mock-first
+  - tdd

@@ -1,0 +1,39 @@
+schema_version: "1.0"
+
+extension:
+  id: business
+  name: "Software Business Management"
+  version: "1.0.0"
+  description: "Run a software business as a single source of truth in Markdown. Init captures vision, mission, milestones, KPIs, revenue streams, offers, core values, and strategy-vs-tactics (seeded with the ZikZak price-comparison stack, ARRRRNY's daily motto + manifesto, and the device-side / disconnected moat), then each morning you log the ONE task to finish by 2 PM and get an honest alignment read against your mission, next milestone, values, and strategy — a sparring partner that trusts your gut, not just a critic."
+  author: arrrrny
+  repository: https://github.com/arrrrny/speckit-extensions
+  license: MIT
+
+requires:
+  speckit_version: ">=0.9.0"
+
+provides:
+  commands:
+    - name: speckit.business.init
+      file: commands/speckit.business.init.md
+      description: "Interview you for vision, mission, milestones, KPIs, revenue streams and offers; scaffold the .business/ source of truth (ZikZak stack seeded by default)."
+    - name: speckit.business.daily
+      file: commands/speckit.business.daily.md
+      description: "Log the single most important task to ship by 2 PM and receive an alignment analysis vs mission + next milestone, with a chance to talk through drift."
+    - name: speckit.business.review
+      file: commands/speckit.business.review.md
+      description: "Reconcile KPIs vs milestones, surface mission drift, and print the next milestone's decisive tasks from the daily logs."
+
+  config:
+    - name: "business-config.yml"
+      template: "config-template.yml"
+      description: "Business extension configuration (product name, default currency, primary stack reference)"
+      required: false
+
+tags:
+  - "business"
+  - "strategy"
+  - "focus"
+  - "revenue"
+  - "product"
+  - "pmf"
