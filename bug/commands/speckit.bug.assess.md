@@ -4,7 +4,7 @@ description: "Assess a bug report (pasted text or URL) against the codebase and 
 
 # Assess Bug
 
-Triage a bug report against the current codebase: understand the symptom, locate the suspected root cause, judge severity, and propose a remediation. The output is a single assessment file at `.specify/bugs/<slug>/assessment.md` that downstream commands (`__SPECKIT_COMMAND_BUG_FIX__`, `__SPECKIT_COMMAND_BUG_TEST__`) consume.
+Triage a bug report against the current codebase: understand the symptom, locate the suspected root cause, judge severity, and propose a remediation. The output is a single assessment file at `.specify/bugs/<issue-number>-<slug>/assessment.md` that downstream commands (`__SPECKIT_COMMAND_BUG_FIX__`, `__SPECKIT_COMMAND_BUG_TEST__`) consume.
 
 ## User Input
 
@@ -23,11 +23,13 @@ If both a URL and text are present, fetch the URL and merge its content with the
 
 ## Slug Resolution
 
-Each bug gets its own directory under `.specify/bugs/<slug>/`. Resolve the slug in this order:
+Each bug gets its own directory under `.specify/bugs/<issue-number>-<slug>/`. Resolve the slug in this order:
+
+When `sync_issue_numbers: true` (the default in `bug-config.yml`), the directory is named `<issue-number>-<slug>` — the issue number comes from the resolved GitHub issue, so bugs sort numerically (e.g. `127-crash-on-startup`) rather than alphabetically. When `false`, the directory uses just `<slug>`.
 
 1. **User-provided slug**: If the user explicitly passes a slug (e.g., `slug=login-timeout`, `--slug login-timeout`, or just an obvious slug-like token), use it verbatim after normalization (lowercase, hyphen-separated, no spaces, no special characters other than `-` and digits). Preserve the shape the user asked for — do not append timestamps or numbers.
 2. **Interactive mode** (a human is driving): If no slug was provided, **ask the user** for one and wait for the answer before continuing. Suggest a 2–4 word kebab-case candidate derived from the bug summary as a default.
-3. **Automated / non-interactive mode** (no human to ask): Generate a concise slug yourself from the bug summary (2–4 kebab-case words, e.g. `login-timeout-500`). The generated slug **MUST** produce a unique directory — if `.specify/bugs/<slug>/` already exists, append the shortest disambiguating suffix needed (`-2`, `-3`, …) or a short ISO-style date (`-20260605`) to make it unique. Never overwrite an existing bug directory.
+3. **Automated / non-interactive mode** (no human to ask): Generate a concise slug yourself from the bug summary (2–4 kebab-case words, e.g. `login-timeout-500`). The generated slug **MUST** produce a unique directory — if `.specify/bugs/<issue-number>-<slug>/` already exists, append the shortest disambiguating suffix needed (`-2`, `-3`, …) or a short ISO-style date (`-20260605`) to make it unique. Never overwrite an existing bug directory.
 
 After resolution, set `BUG_SLUG` and `BUG_DIR = .specify/bugs/<BUG_SLUG>`.
 
@@ -182,7 +184,7 @@ When filing, perform the same procedure as `__SPECKIT_COMMAND_BUG_ISSUE__` for t
 
 ## Guardrails
 
-- Never modify source files during assessment — this command only reads and writes inside `.specify/bugs/<slug>/`.
+- Never modify source files during assessment — this command only reads and writes inside `.specify/bugs/<issue-number>-<slug>/`.
 - Never invent reproduction steps or file paths that are not supported by either the report or the codebase.
 - Never overwrite an existing `assessment.md` without confirmation.
 - If the bug report cannot be understood at all (empty, unrelated, spam), set verdict to `invalid` with a clear reason and stop.

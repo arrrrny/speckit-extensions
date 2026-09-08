@@ -1,6 +1,6 @@
 # Bug Triage Workflow Extension
 
-An end-to-end bug triage workflow for Spec Kit: assess, report (GitHub issue), fix, open a PR, and validate. Each bug lives in its own directory under `.specify/bugs/<slug>/`, with one Markdown report per stage.
+An end-to-end bug triage workflow for Spec Kit: assess, report (GitHub issue), fix, open a PR, and validate. Each bug lives in its own directory under `.specify/bugs/<issue-number>-<slug>/`, with one Markdown report per stage.
 
 ## Overview
 
@@ -16,7 +16,7 @@ This extension delivers an opinionated, repeatable bug workflow that any AI codi
 The stages communicate through Markdown files in a single per-bug directory:
 
 ```
-.specify/bugs/<slug>/
+.specify/bugs/<issue-number>-<slug>/
 ├── assessment.md    # written by speckit.bug.assess
 ├── issue.md         # written by speckit.bug.issue or speckit.bug.fetch (issue number + URL)
 ├── issue-body.md    # issue body draft used by speckit.bug.issue
@@ -32,20 +32,25 @@ The stages communicate through Markdown files in a single per-bug directory:
 
 | Command | Description | Output |
 |---------|-------------|--------|
-| `speckit.bug.assess` | Triages a bug report (pasted text or URL) against the codebase. | `.specify/bugs/<slug>/assessment.md` |
-| `speckit.bug.issue` | Files a GitHub issue from the assessment (the "report" phase). | `.specify/bugs/<slug>/issue.md` |
-| `speckit.bug.fetch` | Loads an existing GitHub issue (`issue.md`) and seeds a triage draft. | `.specify/bugs/<slug>/issue.md` + `assessment.md` |
-| `speckit.bug.fix` | Applies the remediation from the assessment (`--branch`/`--worktree` to isolate). | `.specify/bugs/<slug>/fix.md` |
-| `speckit.bug.pr` | Opens a PR for the fix, linking the issue. | `.specify/bugs/<slug>/pr.md` |
-| `speckit.bug.test` | Validates the fix and records the verification report. | `.specify/bugs/<slug>/test.md` |
+| `speckit.bug.assess` | Triages a bug report (pasted text or URL) against the codebase. | `.specify/bugs/<issue-number>-<slug>/assessment.md` |
+| `speckit.bug.issue` | Files a GitHub issue from the assessment (the "report" phase). | `.specify/bugs/<issue-number>-<slug>/issue.md` |
+| `speckit.bug.fetch` | Loads an existing GitHub issue (`issue.md`) and seeds a triage draft. | `.specify/bugs/<issue-number>-<slug>/issue.md` + `assessment.md` |
+| `speckit.bug.fix` | Applies the remediation from the assessment (`--branch`/`--worktree` to isolate). | `.specify/bugs/<issue-number>-<slug>/fix.md` |
+| `speckit.bug.pr` | Opens a PR for the fix, linking the issue. | `.specify/bugs/<issue-number>-<slug>/pr.md` |
+| `speckit.bug.test` | Validates the fix and records the verification report. | `.specify/bugs/<issue-number>-<slug>/test.md` |
 
 ## Slug Conventions
 
 A *slug* is the per-bug directory name under `.specify/bugs/`. It is the only handle the three commands share.
 
+The full directory name depends on the `sync_issue_numbers` setting in `bug-config.yml`:
+
+- **`sync_issue_numbers: true`** (default): the directory is `<issue-number>-<slug>` (e.g. `127-crash-on-startup`). Bugs sort numerically by issue number.
+- **`sync_issue_numbers: false`**: the directory uses just `<slug>` (e.g. `crash-on-startup`) and sorts alphabetically.
+
 - **User-provided**: any shape the user wants, normalized to lowercase kebab-case (e.g. `login-timeout`, `cve-2026-001`, `oauth-redirect-500`). The slug is preserved verbatim after normalization — no timestamps or numbers are appended automatically.
 - **Asked for**: in interactive use, `speckit.bug.assess` asks for a slug when none is supplied, suggesting a kebab-case default derived from the bug summary.
-- **Automated**: when no human is available to answer, the agent generates a slug itself. The generated slug **MUST** produce a unique directory — if `.specify/bugs/<slug>/` already exists, the agent appends the shortest disambiguating suffix needed (`-2`, `-3`, …) or a short date (`-20260605`). Existing bug directories are never overwritten.
+- **Automated**: when no human is available to answer, the agent generates a slug itself. The generated slug **MUST** produce a unique directory — if the target directory already exists, the agent appends the shortest disambiguating suffix needed (`-2`, `-3`, …) or a short date (`-20260605`). Existing bug directories are never overwritten.
 
 ## Installation
 
@@ -106,6 +111,7 @@ The extension reads `.specify/extensions/bug/bug-config.yml` (copied from `confi
 - `branch_prefix` (`"fix"`) — prefix for the fix branch created by `speckit.bug.fix --branch` / `--worktree` (branch is `<prefix>/<slug>`, e.g. `fix/login-timeout`).
 - `default_host` (`"github"`) — Git host used when creating issues/PRs.
 - `tdd_enabled` (`true`) — when `true` (default), `bug.fix` and `bug.test` run through the TDD extension's red-green-refactor loop (`tdd.setup` → `tdd.plan` → `tdd.run` → `implement` → `tdd.verify`) instead of ad-hoc testing, mirroring `spec-whole`. Requires the `tdd` extension to be installed. Set to `false` for the classic fix → test → PR flow.
+- `sync_issue_numbers` (`true`) — when `true` (default), bug directories are named `<issue-number>-<slug>` so bugs sort numerically by GitHub issue number. When `false`, directories use just the slug and sort alphabetically.
 
 ### TDD integration
 
@@ -116,7 +122,7 @@ directory, and drives the red-green loop (`tdd.run all`) so the fix is written t
 these automatically, so a single `bug-whole` run delivers the whole bug lifecycle with TDD.
 
 ```
-.specify/bugs/<slug>/
+.specify/bugs/<issue-number>-<slug>/
 ├── assessment.md    # written by speckit.bug.assess
 ├── spec.md          # synthesized from assessment.md when running in TDD mode
 ├── fix.md           # written by speckit.bug.fix
@@ -141,7 +147,7 @@ This separation keeps triage read-only and lets you decide per bug whether it is
 
 ## Guardrails
 
-- `speckit.bug.assess` and `speckit.bug.test` **never modify source code**. They read the repository and write only inside `.specify/bugs/<slug>/`.
+- `speckit.bug.assess` and `speckit.bug.test` **never modify source code**. They read the repository and write only inside `.specify/bugs/<issue-number>-<slug>/`.
 - `speckit.bug.issue` and `speckit.bug.pr` are opt-in **external** actions (they call the `gh` CLI). They never edit repository source; when `gh`/GitHub is unavailable they write a local draft (`issue-draft.md` / `pr-draft.md`) instead of erroring.
 - `speckit.bug.fix` is the only command that edits source code, and it stays within the files listed in the assessment unless new evidence requires expanding scope (which is logged in `fix.md` under **Deviations from Assessment**).
 - None of the commands overwrite an existing report file without explicit confirmation; in automated mode they refuse and pick a new unique slug instead.

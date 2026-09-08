@@ -23,3 +23,9 @@ default_host: github
 #            bug.test validates with a manual check table. No TDD commands are run.
 # The tdd extension must be installed for this to take effect.
 tdd_enabled: true
+
+# Sync bug directory names with the GitHub issue number. When true (default),
+# each bug directory is named `<issue-number>-<slug>` (e.g. `127-crash-on-startup`)
+# so bugs are ordered by issue number rather than alphabetically. When false,
+# directories use just the slug (e.g. `crash-on-startup`) and sort alphabetically.
+sync_issue_numbers: true

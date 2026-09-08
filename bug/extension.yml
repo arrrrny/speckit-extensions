@@ -4,7 +4,7 @@ extension:
   id: bug
   name: "Bug Triage Workflow"
   version: "1.1.0"
-  description: "Assess, load or report (GitHub issue), fix, and validate bug reports against the codebase, with optional branch isolation and PR creation; per-bug reports stored under .specify/bugs/<slug>/. Optional TDD integration (tdd_enabled, default true) drives fix/verify through the TDD extension's red-green-refactor loop."
+  description: "Assess, load or report (GitHub issue), fix, and validate bug reports against the codebase, with optional branch isolation and PR creation; per-bug reports stored under .specify/bugs/<issue-number>-<slug>/. Optional TDD integration (tdd_enabled, default true) drives fix/verify through the TDD extension's red-green-refactor loop."
   author: arrrrny
   repository: https://github.com/arrrrny/speckit-extensions
   license: MIT
@@ -42,11 +42,14 @@ provides:
     - name: speckit.bug.test
       file: commands/speckit.bug.test.md
       description: "Validate that a previously fixed bug is resolved and record the verification report"
+    - name: speckit.bug.rename
+      file: commands/speckit.bug.rename.md
+      description: "Rename a bug directory to match its GitHub issue number (sync_issue_numbers mode)"
 
   config:
     - name: "bug-config.yml"
       template: "config-template.yml"
-      description: "Bug workflow configuration (issue auto-creation, branch prefix)"
+      description: "Bug workflow configuration (issue auto-creation, branch prefix, sync_issue_numbers)"
       required: false
 
 tags:

@@ -4,7 +4,7 @@ description: "File a GitHub issue from a bug assessment (the 'report' phase) and
 
 # Report Bug (Create Issue)
 
-Turn a local bug assessment into a tracked GitHub issue. This command reads `.specify/bugs/<slug>/assessment.md` (produced by `__SPECKIT_COMMAND_BUG_ASSESS__`) and creates a GitHub issue via the `gh` CLI, then records the issue number and URL in `BUG_DIR/issue.md`. If `gh` or a GitHub remote is unavailable, it writes a ready-to-paste draft instead so no work is lost.
+Turn a local bug assessment into a tracked GitHub issue. This command reads `.specify/bugs/<issue-number>-<slug>/assessment.md` (produced by `__SPECKIT_COMMAND_BUG_ASSESS__`) and creates a GitHub issue via the `gh` CLI, then records the issue number and URL in `BUG_DIR/issue.md`. If `gh` or a GitHub remote is unavailable, it writes a ready-to-paste draft instead so no work is lost.
 
 ## User Input
 
@@ -20,6 +20,7 @@ Accept any of:
 
 ## Slug Resolution
 
+Read `.specify/extensions/bug/bug-config.yml` to check `sync_issue_numbers`. When `true` (the default), the directory is named `<issue-number>-<slug>` so bugs sort numerically. When `false`, the directory uses just `<slug>`.
 Resolve `BUG_SLUG` in this order, stopping at the first match:
 
 1. **Explicit user input** — a slug passed in `$ARGUMENTS` (any of the forms above).

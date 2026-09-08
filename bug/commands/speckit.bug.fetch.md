@@ -4,9 +4,11 @@ description: "Load an existing GitHub issue into the bug workflow (the complemen
 
 # Fetch Bug (Load Existing Issue)
 
-Load an existing GitHub issue into the local bug workflow. This is the **complement** of `__SPECKIT_COMMAND_BUG_ISSUE__`, which *creates* an issue — `fetch` *loads* one that already exists. It pulls the issue via the `gh` CLI, records it at `.specify/bugs/<slug>/issue.md`, and seeds `.specify/bugs/<slug>/assessment.md` so the rest of the pipeline (`__SPECKIT_COMMAND_BUG_FIX__`, `__SPECKIT_COMMAND_BUG_TEST__`) can proceed.
+Load an existing GitHub issue into the local bug workflow. This is the **complement** of `__SPECKIT_COMMAND_BUG_ISSUE__`, which *creates* an issue — `fetch` *loads* one that already exists. It pulls the issue via the `gh` CLI, records it at `.specify/bugs/<issue-number>-<slug>/issue.md`, and seeds `.specify/bugs/<issue-number>-<slug>/assessment.md` so the rest of the pipeline (`__SPECKIT_COMMAND_BUG_FIX__`, `__SPECKIT_COMMAND_BUG_TEST__`) can proceed.
 
 Use `fetch` when a bug is already tracked on GitHub (reported by someone else, or from another session) and you want to triage and fix it here. `fetch` never creates, edits, or closes the issue — it only reads it.
+
+
 
 ## User Input
 
@@ -23,7 +25,11 @@ Accept any of:
 
 ## Slug Resolution
 
-Each bug gets its own directory under `.specify/bugs/<slug>/`. If the user passed a slug, use it verbatim after normalization (lowercase, hyphen-separated, no spaces, no special characters other than `-` and digits). Otherwise derive a 2–4 word kebab-case slug from the issue **title**. Ensure the directory is unique — if `.specify/bugs/<slug>/` already exists, append the shortest disambiguating suffix (`-2`, `-3`, …) or `-<issue-number>`. Never overwrite an existing bug directory.
+Each bug gets its own directory under `.specify/bugs/`. Read `.specify/extensions/bug/bug-config.yml` to check `sync_issue_numbers`. When `true` (the default), the directory is named `<issue-number>-<slug>` — the issue number comes from the resolved GitHub issue reference (already parsed in step 1 of Execution), and `<slug>` is a 2–4 word kebab-case slug derived from the issue title. When `false`, the directory uses just `<slug>`.
+
+If the user passed a slug via `slug=<bug-slug>` / `--slug <bug-slug>`, normalize it (lowercase, hyphenated, no spaces, no special characters other than `-` and digits). When `sync_issue_numbers: true`, prefix it with the issue number: `<issue-number>-<user-slug>`. Otherwise use it verbatim.
+
+Otherwise derive a 2–4 word kebab-case slug from the issue **title**. Ensure the directory is unique — if the target directory already exists, append the shortest disambiguating suffix (`-2`, `-3`, …). Never overwrite an existing bug directory.
 
 After resolution, set `BUG_SLUG` and `BUG_DIR = .specify/bugs/<BUG_SLUG>`.
 

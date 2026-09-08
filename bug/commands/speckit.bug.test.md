@@ -4,7 +4,7 @@ description: "Validate that a previously fixed bug is resolved and record the ve
 
 # Test Bug Fix
 
-Validate that the fix recorded by `__SPECKIT_COMMAND_BUG_FIX__` actually resolves the bug described by `__SPECKIT_COMMAND_BUG_ASSESS__`. The output is a verification report at `.specify/bugs/<slug>/test.md`.
+Validate that the fix recorded by `__SPECKIT_COMMAND_BUG_FIX__` actually resolves the bug described by `__SPECKIT_COMMAND_BUG_ASSESS__`. The output is a verification report at `.specify/bugs/<issue-number>-<slug>/test.md`.
 
 ## User Input
 
@@ -20,10 +20,11 @@ The user input should identify the bug to validate. Accept any of:
 
 ## Slug Resolution
 
+Read `.specify/extensions/bug/bug-config.yml` to check `sync_issue_numbers`. When `true` (the default), the directory is named `<issue-number>-<slug>` so bugs sort numerically. When `false`, the directory uses just `<slug>`.
 Resolve `BUG_SLUG` in this order, stopping at the first match:
 
 1. **Explicit user input** — a slug passed in `$ARGUMENTS` (any of the forms above).
-2. **Conversation context** — if the current session has just run `__SPECKIT_COMMAND_BUG_ASSESS__` or `__SPECKIT_COMMAND_BUG_FIX__`, the slug it reported is the working slug. Reuse it without re-prompting. Confirm it by checking that `.specify/bugs/<slug>/fix.md` exists; if it does not, fall through.
+2. **Conversation context** — if the current session has just run `__SPECKIT_COMMAND_BUG_ASSESS__` or `__SPECKIT_COMMAND_BUG_FIX__`, the slug it reported is the working slug. Reuse it without re-prompting. Confirm it by checking that `.specify/bugs/<issue-number>-<slug>/fix.md` exists; if it does not, fall through.
 3. **Single candidate on disk** — list `.specify/bugs/*/fix.md`. If exactly one bug has a `fix.md`, use it.
 4. **Disambiguate**:
    - **Interactive mode**: ask the user which bug to validate and list the candidates.
@@ -131,6 +132,6 @@ extension's auditor rather than the manual check table:
 
 ## Guardrails
 
-- This command MUST NOT modify source code. It only runs checks and writes inside `.specify/bugs/<slug>/`.
+- This command MUST NOT modify source code. It only runs checks and writes inside `.specify/bugs/<issue-number>-<slug>/`.
 - Never overwrite an existing `test.md` without confirmation.
 - Never mark a fix as `verified` based on tests alone if the original assessment listed a reproduction that you did not actually exercise — downgrade to `partial` and say so.
