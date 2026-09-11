@@ -45,7 +45,7 @@ speckit-extensions/
 
 | Extension | Purpose | Docs |
 | --- | --- | --- |
-| [`gh-triage`](./gh-triage) | Batch-fetch open GitHub issues, classify as bug/feature, label, and route to the right workflow | [README](./gh-triage/README.md) |
+| [`gh-triage`](./gh-triage) | Batch-fetch open GitHub issues, classify as bug/feature/chore, label each, and route it to the right workflow | [README](./gh-triage/README.md) |
 | [`gym`](./gym) | Forge operators through warmup reps and graded exercises, then open a gate only on a full pass | [README](./gym/README.md) |
 | [`tdd`](./tdd) | Drive spec-kit implementation test-first: a language-agnostic red-green-refactor loop with a per-feature test list, recorded evidence, and mutation-checked test strength | [README](./tdd/README.md) |
 | [`chore`](./chore) | Scope, track, and implement maintenance chores (non-feature, non-bug work) — constitution-aware, routed by `gh-triage` | [README](./chore/README.md) |

@@ -7,6 +7,9 @@
   `.specify/chores/`). Only features are saved as specs under `specs/` via
   `speckit.specify`. Added explicit guardrails and phase-level instructions to
   prevent accidentally calling `speckit.specify` for bugs or chores.
+- **Fix config loading**: `load_config` now returns success explicitly, so a
+  config without `chore_keywords` no longer aborts the script under `set -euo
+  pipefail` before the first `gh` call.
 
 ## 1.1.0 - 2026-08-28
 

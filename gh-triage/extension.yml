@@ -3,7 +3,7 @@ schema_version: "1.0"
 extension:
   id: gh-triage
   name: "GitHub Issue Triage"
-  version: "1.1.0"
+  version: "1.1.1"
   description: "Fetch open GitHub issues, classify each as bug, feature, or chore, then DELEGATE to the correct extension: bugs → bug.fetch (.specify/bugs/), chores → chore.fetch (.specify/chores/), features → speckit.specify (specs/). Never save bugs or chores as specs."
   author: arrrrny
   repository: https://github.com/arrrrny/speckit-extensions
