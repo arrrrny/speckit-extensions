@@ -292,6 +292,44 @@
       "stars": 0,
       "created_at": "2026-08-31T00:00:00Z",
       "updated_at": "2026-08-31T00:00:00Z"
+    },
+    "zuraffa-migrate": {
+      "id": "zuraffa-migrate",
+      "name": "Zuraffa Migrate",
+      "version": "1.0.0",
+      "description": "Brownfield migration pipeline: convert an existing Dart/Flutter package into a Zuraffa-native package or federated plugin, rebuilt test-first with the zfa TDD engine. Census -> shape decision -> mapping -> test-first port -> eight parity gates.",
+      "author": "arrrrny",
+      "repository": "https://github.com/arrrrny/speckit-extensions",
+      "homepage": "https://github.com/arrrrny/zuraffa",
+      "documentation": "https://github.com/arrrrny/speckit-extensions/blob/master/zuraffa-migrate/README.md",
+      "changelog": "https://github.com/arrrrny/speckit-extensions/blob/master/zuraffa-migrate/CHANGELOG.md",
+      "license": "MIT",
+      "category": "migration",
+      "effect": "read-write",
+      "requires": {
+        "speckit_version": ">=0.11.9"
+      },
+      "provides": {
+        "commands": 4,
+        "templates": 2,
+        "hooks": 0
+      },
+      "tags": [
+        "zuraffa",
+        "migration",
+        "brownfield",
+        "clean-architecture",
+        "dart",
+        "flutter",
+        "tdd",
+        "federated-plugin"
+      ],
+      "download_url": "https://github.com/arrrrny/speckit-extensions/releases/download/zuraffa-migrate-v1.0.0/zuraffa-migrate.zip",
+      "verified": false,
+      "downloads": 0,
+      "stars": 0,
+      "created_at": "2026-09-15T00:00:00Z",
+      "updated_at": "2026-09-15T00:00:00Z"
     }
   }
 }
