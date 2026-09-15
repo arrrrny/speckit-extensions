@@ -51,6 +51,9 @@ Passthrough re-exports of dependencies: <list or none>.
 
 **Decision**: <package | federated plugin> — because <census evidence>.
 
+**Target platforms** (federated plugin only): <comma-separated platform list,
+copied verbatim into the plan phase's `zfa package create-plugin --platforms`>.
+
 Scaffold command: <exact command> (or: in-place skeleton on branch
 `zuraffa-rewrite`).
 

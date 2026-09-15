@@ -21,8 +21,9 @@ $ARGUMENTS
 ## Step 0 — Preconditions
 
 ```bash
+pkg="${1:-$PWD}"
 zfa --version 2>/dev/null && echo ZFA_OK || echo ZFA_MISSING
-test -f pubspec.yaml && echo PUBSPEC_OK || echo NOT_A_DART_PACKAGE
+test -f "$pkg/pubspec.yaml" && echo PUBSPEC_OK || echo NOT_A_DART_PACKAGE
 ```
 
 ZFA_MISSING → fix: install the zfa CLI first; this extension is a coordinator,
@@ -67,10 +68,13 @@ channel), `asset`, `build-script`. This decides the shape in Step 5.
 ```bash
 cat pubspec.yaml
 grep -rln "package:<current_name>/" ../ --include="*.dart" | grep -v "/<current_name>/" | head
+gh search code "package:<current_name>/" --limit 50   # consumers outside sibling checkouts
 ```
 
 List dependencies and which ones become zuraffa-native equivalents (hand DI →
-container, errors → AppFailure). List every consumer repo and the symbols they
+container, errors → AppFailure). List every consumer repo — sibling checkouts
+from the grep plus the `gh search` hits (consumers checked out elsewhere or in
+other orgs) — and the symbols they
 actually import — the facade promise (§ Phase 4 of the migration guide) is
 made to them, not to the export list.
 
@@ -85,7 +89,10 @@ whose only native touch is FFI):
 | Channels / native platform APIs | **Federated plugin** — `zfa package create-plugin <name>` |
 | Pure core + thin Flutter wrapper | Package for the core now; wrapper migrates later as sibling |
 
-Record the decision **with the census evidence that forced it**.
+Record the decision **with the census evidence that forced it**. For a
+federated plugin target, also record the target platform list in the
+contract's shape decision (§6) — the plan phase copies it verbatim into
+`zfa package create-plugin --platforms`.
 
 ## Step 6 — Mapping decisions
 

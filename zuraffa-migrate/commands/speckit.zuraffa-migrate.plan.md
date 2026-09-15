@@ -23,7 +23,8 @@ $ARGUMENTS
 ## Step 0 — Preconditions
 
 ```bash
-test -f specs/*-zuraffa-migration/migration-contract.md && echo CONTRACT_OK || echo CONTRACT_MISSING
+contract="$(ls -t specs/*-zuraffa-migration/migration-contract.md 2>/dev/null | head -1)"
+test -n "$contract" && echo CONTRACT_OK || echo CONTRACT_MISSING
 ```
 
 CONTRACT_MISSING → fix: run `/speckit.zuraffa-migrate.analyze` first. An open
@@ -40,7 +41,7 @@ zfa package create <name> --description "<original description>, zuraffa-native"
 zfa package create <name> --description "<original description>, zuraffa-native"
 
 # federated shape
-zfa package create-plugin <name> --description "..." --repo <owner>/<name> --platforms android,ios,macos
+zfa package create-plugin <name> --description "..." --repo <owner>/<name> --platforms <platforms-from-contract>
 ```
 
 Always `--dry-run` first and diff the preview against the contract's census —

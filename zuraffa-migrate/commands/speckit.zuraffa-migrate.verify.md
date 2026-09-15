@@ -4,9 +4,11 @@ description: "Walk the parity gates against the migration contract and write a v
 
 # Zuraffa Migrate — Verify
 
-Cold-context acceptance audit of the migration. Check every gate, write
-`specs/<feature>/tdd/verification.md` (or the parity checklist's verdict
-section) with a verdict and — on any failure — remediation tasks. This command
+Cold-context acceptance audit of the migration. Check every gate, write the
+verdict into the parity checklist's verdict section (the canonical home), and
+— on any failure — remediation tasks. If the zfa TDD flow also produces
+`specs/<feature>/tdd/verification.md`, keep that file as a pointer to the
+checklist's verdict, never a second verdict. This command
 never modifies source; it checks, reports, and prescribes.
 
 ## User Input
@@ -88,7 +90,10 @@ coverage).
 
 ## Verdict
 
-Write the verdict file: one line per gate (PASS/FAIL + evidence), overall
+Write the verdict into the parity checklist's verdict section (canonical): one
+line per gate (PASS/FAIL + evidence), overall
 `MIGRATION VERIFIED` only when **all eight** pass, and remediation tasks for
-each failure. Print the same table to the console and stop — remediation
+each failure. If `specs/<feature>/tdd/verification.md` exists, reduce it to a
+pointer at the checklist's verdict. Print the same table to the console and
+stop — remediation
 belongs to a re-run of the port phase, not to this command.
