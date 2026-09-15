@@ -1,0 +1,48 @@
+schema_version: "1.0"
+
+extension:
+  id: zuraffa-migrate
+  name: "Zuraffa Migrate Extension"
+  version: "1.0.0"
+  description: "Brownfield migration pipeline: convert an existing Dart/Flutter package into a Zuraffa-native package or federated plugin, rebuilt test-first with the zfa TDD engine. Inventory -> shape decision -> mapping -> test-first port -> parity gates."
+  author: arrrrny
+  repository: https://github.com/arrrrny/speckit-extensions
+  homepage: https://github.com/arrrrny/zuraffa
+  license: MIT
+
+requires:
+  speckit_version: ">=0.11.9"
+
+provides:
+  templates:
+    - name: migration-contract
+      file: templates/migration-contract-template.md
+      description: "Migration contract: public API census, behavior census (tests = contract), native/platform census, dependency census, symbol-by-symbol mapping decisions, and intentionally-broken surface"
+    - name: parity-checklist
+      file: templates/parity-checklist-template.md
+      description: "Parity gate checklist: API parity, behavior parity, layer discipline, DI completeness, statics, module lifecycle, publish dry-run, TDD journal evidence"
+
+  commands:
+    - name: speckit.zuraffa-migrate.analyze
+      file: commands/speckit.zuraffa-migrate.analyze.md
+      description: "Run the censuses on the existing package (public API, tests, native/platform, dependencies, consumers), decide the target shape (package vs federated plugin), and write the migration contract"
+    - name: speckit.zuraffa-migrate.plan
+      file: commands/speckit.zuraffa-migrate.plan.md
+      description: "Scaffold the zuraffa target (zfa package create / zfa package create-plugin or in-place skeleton), map every symbol to its zuraffa shape, and emit the rewrite feature's spec.md + TDD test-list"
+    - name: speckit.zuraffa-migrate.port
+      file: commands/speckit.zuraffa-migrate.port.md
+      description: "Drive the test-first port: baseline green, port the existing suite (expected red), then red-green-refactor each behavior through the zfa tdd engine, and build the compatibility facade"
+    - name: speckit.zuraffa-migrate.verify
+      file: commands/speckit.zuraffa-migrate.verify.md
+      description: "Walk the parity gates against the migration contract (API parity, behavior parity, layer discipline, DI completeness, lifecycle, publish dry-run, journal) and write a verdict with remediation tasks"
+
+tags:
+  - zuraffa
+  - migration
+  - brownfield
+  - clean-architecture
+  - dart
+  - flutter
+  - tdd
+  - spec-kit-extension
+  - federated-plugin
