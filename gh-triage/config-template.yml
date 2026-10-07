@@ -27,6 +27,18 @@ auto_fix: false
 #            want gh-triage to implement chores.
 auto_implement: false
 
+# Whether gh-triage COMMITS + PUSHES the assessment artifacts it produced
+# (bug/chore `assessment.md`, feature `spec.md`) to the repo's default branch.
+#   true  -> after assessing, commit the artifact paths explicitly and push them
+#            forward, so the next clone (teammate, cloud lane, another machine)
+#            already carries the root cause / scope / remediation. Default.
+#   false -> leave the artifacts in the working tree only. Nothing is lost, but
+#            nothing is inherited either: the next agent re-assesses from zero.
+# Read by the gh-triage command itself (not by the bash engine). A protected or
+# PR-only branch is never force-pushed and never worked around - the unpushed
+# sha is reported instead.
+persist_assessment: true
+
 # Whether the `feature` command automatically runs speckit.specify after filing
 # the feature issue.
 #   false -> `feature` only creates the GitHub issue. You either run
@@ -53,6 +65,13 @@ labels:
   bug: "bug"            # applied when an issue is classified as a bug
   feature: "enhancement" # applied when an issue is classified as a feature
   chore: "chore"        # applied when an issue is classified as a chore
+  # LABEL VOCABULARY: the VERDICT is always `feature`, but the LABEL it carries
+  # is whatever the repo calls a feature request. GitHub's own default is
+  # `enhancement` (above). Repos in the forklift fleet label features `spec`
+  # instead, because their triage tooling reads exactly three labels:
+  # bug / spec / chore. Set `feature: "spec"` in those repos - the routing in the
+  # triage command is unaffected, only the label written to GitHub changes.
+  # A label the repo does not have is skipped with a warning, never created.
   # Applied to issues the classifier cannot confidently place as bug/feature.
   # Set to a real repo label (e.g. "needs_triage") to enable; the triage never
   # auto-flags an issue as "invalid" from a heuristic.

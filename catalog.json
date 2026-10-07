@@ -1,8 +1,38 @@
 {
   "schema_version": "1.0",
-  "updated_at": "2026-09-11T00:00:00Z",
+  "updated_at": "2026-10-07T00:00:00Z",
   "catalog_url": "https://raw.githubusercontent.com/arrrrny/speckit-extensions/master/catalog.json",
   "extensions": {
+    "bug": {
+      "id": "bug",
+      "name": "Bug Triage Workflow",
+      "version": "1.1.0",
+      "description": "Assess, load or report (GitHub issue), fix, and validate bug reports against the codebase, with optional branch isolation and PR creation; per-bug reports stored under .specify/bugs/<slug>/. Optional TDD integration (tdd_enabled, default true) drives fix/verify through the TDD extension's red-green-refactor loop.",
+      "author": "arrrrny",
+      "repository": "https://github.com/arrrrny/speckit-extensions",
+      "homepage": "https://github.com/arrrrny/speckit-extensions",
+      "documentation": "https://github.com/arrrrny/speckit-extensions/blob/master/bug/README.md",
+      "changelog": "https://github.com/arrrrny/speckit-extensions/blob/master/bug/CHANGELOG.md",
+      "license": "MIT",
+      "category": "workflow",
+      "effect": "read-write",
+      "requires": {
+        "speckit_version": ">=0.9.0"
+      },
+      "provides": {
+        "commands": 6,
+        "hooks": 0
+      },
+      "tags": [
+        "bug"
+      ],
+      "download_url": "https://github.com/arrrrny/speckit-extensions/releases/download/bug-v1.1.0/bug.zip",
+      "verified": false,
+      "downloads": 0,
+      "stars": 0,
+      "created_at": "2026-10-07T00:00:00Z",
+      "updated_at": "2026-10-07T00:00:00Z"
+    },
     "business": {
       "id": "business",
       "name": "Software Business Management",
@@ -37,6 +67,91 @@
       "stars": 0,
       "created_at": "2026-08-31T00:00:00Z",
       "updated_at": "2026-08-31T00:00:00Z"
+    },
+    "chore": {
+      "id": "chore",
+      "name": "Chore Workflow",
+      "version": "1.0.0",
+      "description": "Scope, track, and implement maintenance chores (non-feature, non-bug work) through the Spec Kit workflow, constitution-aware and recorded under .specify/chores/<slug>/.",
+      "author": "arrrrny",
+      "repository": "https://github.com/arrrrny/speckit-extensions",
+      "homepage": "https://github.com/arrrrny/speckit-extensions",
+      "documentation": "https://github.com/arrrrny/speckit-extensions/blob/master/chore/README.md",
+      "changelog": "https://github.com/arrrrny/speckit-extensions/blob/master/chore/CHANGELOG.md",
+      "license": "MIT",
+      "category": "workflow",
+      "effect": "read-write",
+      "requires": {
+        "speckit_version": ">=0.9.0",
+        "tools": [
+          {
+            "name": "gh",
+            "required": false
+          }
+        ]
+      },
+      "provides": {
+        "commands": 5,
+        "hooks": 0
+      },
+      "tags": [
+        "chore",
+        "triage",
+        "workflow",
+        "maintenance"
+      ],
+      "download_url": "https://github.com/arrrrny/speckit-extensions/releases/download/chore-v1.0.0/chore.zip",
+      "verified": false,
+      "downloads": 0,
+      "stars": 0,
+      "created_at": "2026-08-26T00:00:00Z",
+      "updated_at": "2026-08-26T00:00:00Z"
+    },
+    "gh-triage": {
+      "id": "gh-triage",
+      "name": "GitHub Issue Triage",
+      "version": "1.2.0",
+      "description": "Fetch open GitHub issues, classify each as bug, feature, or chore, then route it with a canonical per-kind artifact root and assess command (bug → .specify/bugs/assessment.md, chore → .specify/chores/assessment.md, feature → specs/spec.md — a feature has no assessment.md). Reuses an assessment the repo already carries instead of re-deriving it, then commits and pushes the artifacts to the default branch so every later clone inherits them.",
+      "author": "arrrrny",
+      "repository": "https://github.com/arrrrny/speckit-extensions",
+      "homepage": "https://github.com/arrrrny/speckit-extensions",
+      "documentation": "https://github.com/arrrrny/speckit-extensions/blob/master/gh-triage/README.md",
+      "changelog": "https://github.com/arrrrny/speckit-extensions/blob/master/gh-triage/CHANGELOG.md",
+      "license": "MIT",
+      "category": "integration",
+      "effect": "read-write",
+      "requires": {
+        "speckit_version": ">=0.9.0",
+        "tools": [
+          {
+            "name": "gh",
+            "required": true
+          },
+          {
+            "name": "jq",
+            "required": true
+          }
+        ]
+      },
+      "provides": {
+        "commands": 2,
+        "hooks": 0
+      },
+      "tags": [
+        "triage",
+        "github",
+        "workflow",
+        "automation",
+        "bug",
+        "feature",
+        "chore"
+      ],
+      "download_url": "https://github.com/arrrrny/speckit-extensions/releases/download/gh-triage-v1.2.0/gh-triage.zip",
+      "verified": false,
+      "downloads": 0,
+      "stars": 0,
+      "created_at": "2026-08-26T00:00:00Z",
+      "updated_at": "2026-10-07T00:00:00Z"
     },
     "gym": {
       "id": "gym",
@@ -77,24 +192,24 @@
       "created_at": "2026-08-26T00:00:00Z",
       "updated_at": "2026-08-26T00:00:00Z"
     },
-    "gh-triage": {
-      "id": "gh-triage",
-      "name": "GitHub Issue Triage",
-      "version": "1.1.1",
-      "description": "Fetch open GitHub issues, classify each as bug, feature, or chore, route it to the bug, chore, or specify workflow, and apply the matching triage labels (on by default).",
+    "md-doctor": {
+      "id": "md-doctor",
+      "name": "MD Doctor",
+      "version": "1.0.0",
+      "description": "Diagnose and grade the truthfulness of every agent-written .md file against living ground truth (git history, .memsearch records, and TDD verification), keep a run history, and re-evaluate what changed week over week. Grades each doc 0-100 and suggests update/delete/create.",
       "author": "arrrrny",
       "repository": "https://github.com/arrrrny/speckit-extensions",
       "homepage": "https://github.com/arrrrny/speckit-extensions",
-      "documentation": "https://github.com/arrrrny/speckit-extensions/blob/master/gh-triage/README.md",
-      "changelog": "https://github.com/arrrrny/speckit-extensions/blob/master/gh-triage/CHANGELOG.md",
+      "documentation": "https://github.com/arrrrny/speckit-extensions/blob/master/md-doctor/README.md",
+      "changelog": "https://github.com/arrrrny/speckit-extensions/blob/master/md-doctor/CHANGELOG.md",
       "license": "MIT",
-      "category": "integration",
+      "category": "quality",
       "effect": "read-write",
       "requires": {
         "speckit_version": ">=0.9.0",
         "tools": [
           {
-            "name": "gh",
+            "name": "git",
             "required": true
           },
           {
@@ -104,63 +219,57 @@
         ]
       },
       "provides": {
-        "commands": 2,
-        "hooks": 0
+        "commands": 5,
+        "hooks": 1
       },
       "tags": [
-        "triage",
-        "github",
-        "workflow",
-        "automation",
-        "bug",
-        "feature",
-        "chore"
+        "md-doctor",
+        "documentation",
+        "truthfulness",
+        "fact-check",
+        "stale-docs",
+        "quality",
+        "tdd",
+        "ground-truth",
+        "spec-kit",
+        "spec-kit-extension"
       ],
-      "download_url": "https://github.com/arrrrny/speckit-extensions/releases/download/gh-triage-v1.1.1/gh-triage.zip",
+      "download_url": "https://github.com/arrrrny/speckit-extensions/releases/download/md-doctor-v1.0.0/md-doctor.zip",
       "verified": false,
       "downloads": 0,
       "stars": 0,
-      "created_at": "2026-08-26T00:00:00Z",
-      "updated_at": "2026-09-11T00:00:00Z"
+      "created_at": "2026-08-31T00:00:00Z",
+      "updated_at": "2026-08-31T00:00:00Z"
     },
-    "chore": {
-      "id": "chore",
-      "name": "Chore Workflow",
-      "version": "1.0.0",
-      "description": "Scope, track, and implement maintenance chores (non-feature, non-bug work) through the Spec Kit workflow, constitution-aware and recorded under .specify/chores/<slug>/.",
+    "spec-stats": {
+      "id": "spec-stats",
+      "name": "Spec Stats — Spec Dashboard at a Glance",
+      "version": "1.2.0",
+      "description": "Generates a beautiful markdown dashboard showing every spec at a glance — stage, progress, health, last-updated — so the user can see the whole portfolio without opening a dozen folders. Plus four on-demand views: open (unfinished), not-green (no green test evidence / failing), reconcile (fix tasks.md checkboxes from actual implementation state), and runs (actually execute the recorded test command per spec on demand and record the result).",
       "author": "arrrrny",
       "repository": "https://github.com/arrrrny/speckit-extensions",
       "homepage": "https://github.com/arrrrny/speckit-extensions",
-      "documentation": "https://github.com/arrrrny/speckit-extensions/blob/master/chore/README.md",
-      "changelog": "https://github.com/arrrrny/speckit-extensions/blob/master/chore/CHANGELOG.md",
+      "documentation": "https://github.com/arrrrny/speckit-extensions/blob/master/spec-stats/README.md",
+      "changelog": "https://github.com/arrrrny/speckit-extensions/blob/master/spec-stats/CHANGELOG.md",
       "license": "MIT",
       "category": "workflow",
       "effect": "read-write",
       "requires": {
-        "speckit_version": ">=0.9.0",
-        "tools": [
-          {
-            "name": "gh",
-            "required": false
-          }
-        ]
+        "speckit_version": ">=0.9.0"
       },
       "provides": {
         "commands": 5,
         "hooks": 0
       },
       "tags": [
-        "chore",
-        "triage",
-        "workflow",
-        "maintenance"
+        "spec-stats"
       ],
-      "download_url": "https://github.com/arrrrny/speckit-extensions/releases/download/chore-v1.0.0/chore.zip",
+      "download_url": "https://github.com/arrrrny/speckit-extensions/releases/download/spec-stats-v1.2.0/spec-stats.zip",
       "verified": false,
       "downloads": 0,
       "stars": 0,
-      "created_at": "2026-08-26T00:00:00Z",
-      "updated_at": "2026-08-26T00:00:00Z"
+      "created_at": "2026-10-07T00:00:00Z",
+      "updated_at": "2026-10-07T00:00:00Z"
     },
     "tdd": {
       "id": "tdd",
@@ -244,54 +353,35 @@
       "created_at": "2026-08-26T00:00:00Z",
       "updated_at": "2026-08-26T00:00:00Z"
     },
-    "md-doctor": {
-      "id": "md-doctor",
-      "name": "MD Doctor",
+    "zuraffa": {
+      "id": "zuraffa",
+      "name": "Zuraffa Extension",
       "version": "1.0.0",
-      "description": "Diagnose and grade the truthfulness of every agent-written .md file against living ground truth (git history, .memsearch records, and TDD verification), keep a run history, and re-evaluate what changed week over week. Grades each doc 0-100 and suggests update/delete/create.",
+      "description": "Zuraffa AI-first clean architecture contract for Dart/Flutter: owns the spec template, injects the non-negotiable framework constitution, and delegates the TDD loop to zfa commands (deterministic engine).",
       "author": "arrrrny",
       "repository": "https://github.com/arrrrny/speckit-extensions",
-      "homepage": "https://github.com/arrrrny/speckit-extensions",
-      "documentation": "https://github.com/arrrrny/speckit-extensions/blob/master/md-doctor/README.md",
-      "changelog": "https://github.com/arrrrny/speckit-extensions/blob/master/md-doctor/CHANGELOG.md",
+      "homepage": "https://github.com/arrrrny/zuraffa",
+      "documentation": "https://github.com/arrrrny/speckit-extensions/blob/master/zuraffa/README.md",
+      "changelog": "https://github.com/arrrrny/speckit-extensions/blob/master/zuraffa/CHANGELOG.md",
       "license": "MIT",
-      "category": "quality",
+      "category": "workflow",
       "effect": "read-write",
       "requires": {
-        "speckit_version": ">=0.9.0",
-        "tools": [
-          {
-            "name": "git",
-            "required": true
-          },
-          {
-            "name": "jq",
-            "required": true
-          }
-        ]
+        "speckit_version": ">=0.9.0"
       },
       "provides": {
-        "commands": 5,
-        "hooks": 1
+        "commands": 2,
+        "hooks": 0
       },
       "tags": [
-        "md-doctor",
-        "documentation",
-        "truthfulness",
-        "fact-check",
-        "stale-docs",
-        "quality",
-        "tdd",
-        "ground-truth",
-        "spec-kit",
-        "spec-kit-extension"
+        "zuraffa"
       ],
-      "download_url": "https://github.com/arrrrny/speckit-extensions/releases/download/md-doctor-v1.0.0/md-doctor.zip",
+      "download_url": "https://github.com/arrrrny/speckit-extensions/releases/download/zuraffa-v1.0.0/zuraffa.zip",
       "verified": false,
       "downloads": 0,
       "stars": 0,
-      "created_at": "2026-08-31T00:00:00Z",
-      "updated_at": "2026-08-31T00:00:00Z"
+      "created_at": "2026-10-07T00:00:00Z",
+      "updated_at": "2026-10-07T00:00:00Z"
     },
     "zuraffa-migrate": {
       "id": "zuraffa-migrate",
